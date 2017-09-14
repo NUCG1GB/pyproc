@@ -10,7 +10,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib import patches
 from scipy.interpolate import interp1d
 from shapely.geometry import Polygon, LineString
-from pyADASutils import adas_adf15_utils, adas_adf11_utils, continuum_utils
+from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 from pyproc.machine_defs import get_DIIIDdefs, get_JETdefs
 
 # font = {'family': 'normal',

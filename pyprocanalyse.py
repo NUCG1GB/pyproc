@@ -6,7 +6,7 @@ import numpy as np
 import os, errno
 import json
 from pyproc.pyprocprocess import PyprocProcess
-from pyADASutils import adas_adf15_utils, adas_adf11_utils, continuum_utils
+from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 ## http://lmfit.github.io/lmfit-py/parameters.html
 from lmfit import minimize, Parameters, report_fit
 
@@ -38,7 +38,7 @@ class PyprocAnalyse(PyprocProcess):
         Te_rnge = [0.2, 5000]
         ne_rnge = [1.0e11, 1.0e15]
         self.ADAS_samples = 100
-        self.ADAS_dict['adf15'] = adas_adf15_utils.get_adas_imp_PECs_interp(self.spec_line_dict,  Te_rnge, ne_rnge, npts=self.ADAS_samples, npts_interp=1000)
+        self.ADAS_dict['adf15'] = adas_adf15_read.get_adas_imp_PECs_interp(self.spec_line_dict,  Te_rnge, ne_rnge, npts=self.ADAS_samples, npts_interp=1000)
         # Also get adf11 for the ionisation balance fractional abundance. No Te_arr, ne_arr interpolation
         # available in the adf11 reader at the moment, so generate more coarse array (sloppy!)
         # TODO: add interpolation capability to the adf11 reader so that adf15 and adf11 are on the same Te, ne grid
@@ -47,9 +47,9 @@ class PyprocAnalyse(PyprocProcess):
         self.ADAS_dict['adf11'] = {}
         for atnum in self.spec_line_dict:
             if int(atnum) > 1:
-                self.ADAS_dict['adf11'][atnum] = adas_adf11_utils.get_adas_imp_adf11(int(atnum), Te_arr_adf11, ne_arr_adf11)
+                self.ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_imp_adf11(int(atnum), Te_arr_adf11, ne_arr_adf11)
             elif int(atnum) == 1:
-                self.ADAS_dict['adf11'][atnum] = adas_adf11_utils.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
+                self.ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
                                                                                           npts=self.ADAS_samples, npts_interp=1000, pwr=True)
         super().__init__(self.ADAS_dict, tranfile=input_dict['tranfile'],
                          machine=input_dict['machine'],
@@ -124,7 +124,7 @@ class PyprocAnalyse(PyprocProcess):
         te = params['te_360_400'].value
         ne = params['ne'].value
 
-        model_ff, model_ff_fb = continuum_utils.adas_continuo_py(wave, te, 1, 1)
+        model_ff, model_ff_fb = continuo_read.adas_continuo_py(wave, te, 1, 1)
         model_ff = model_ff * ne * ne * delL
         model_ff_fb = model_ff_fb * ne * ne * delL
 
@@ -141,9 +141,9 @@ class PyprocAnalyse(PyprocProcess):
             Balmer ff-fb below edge ratio: 300 nm and 400 nm
             Balmer ff-fb above edge ratio: 400 nm and 500 nm
         """
-        cont_ratio_360_400 = continuum_utils.get_fffb_intensity_ratio_fn_T(360.0, 400.0, 1.0, save_output=False, restore=True)
-        cont_ratio_300_360 = continuum_utils.get_fffb_intensity_ratio_fn_T(300.0, 360.0, 1.0, save_output=False, restore=True)
-        cont_ratio_400_500 = continuum_utils.get_fffb_intensity_ratio_fn_T(400.0, 500.0, 1.0, save_output=False, restore=True)
+        cont_ratio_360_400 = continuo_read.get_fffb_intensity_ratio_fn_T(360.0, 400.0, 1.0, save_output=False, restore=True)
+        cont_ratio_300_360 = continuo_read.get_fffb_intensity_ratio_fn_T(300.0, 360.0, 1.0, save_output=False, restore=True)
+        cont_ratio_400_500 = continuo_read.get_fffb_intensity_ratio_fn_T(400.0, 500.0, 1.0, save_output=False, restore=True)
 
         for diag_key in res_dict.keys():
             for chord_key in res_dict[diag_key].keys():
