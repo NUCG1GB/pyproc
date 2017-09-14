@@ -11,7 +11,7 @@ from matplotlib import patches
 from scipy.interpolate import interp1d
 from shapely.geometry import Polygon, LineString
 from pyADASutils import adas_adf15_utils, adas_adf11_utils, continuum_utils
-from pyproc import machine_defs
+from pyproc.machine_defs import get_DIIIDdefs, get_JETdefs
 
 # font = {'family': 'normal',
 #         'weight': 'normal',
@@ -45,7 +45,7 @@ def gaussian(cwl, wv, area, fwhm):
     g = area * (1./(sigma*np.sqrt(2.*np.pi))) * np.exp(-1.*((wv - cwl)**2) / (2*(sigma**2)) )
     return g
 
-class Pyproc:
+class PyprocProcess:
     """
         Class to read and store EDGE2D-EIRENE results
     """
@@ -143,9 +143,9 @@ class Pyproc:
 
         # Get machine definitions
         if self.machine == 'JET':
-            self.defs = machine_defs.get_JETdefs()
+            self.defs = get_JETdefs()
         elif self.machine == 'DIID':
-            self.defs = machine_defs.get_DIIIDdefs()
+            self.defs = get_DIIIDdefs()
 
         if diag_list:
             for key in diag_list:

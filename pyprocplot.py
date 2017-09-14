@@ -7,6 +7,8 @@ import operator
 from functools import reduce
 import matplotlib.pyplot as plt
 from collections import namedtuple
+from pyproc.pyprocanalyse import PyprocAnalyse
+from pyproc.pyprocprocess import PyprocProcess
 
 class PyprocPlot():
     """
@@ -152,9 +154,12 @@ if __name__=='__main__':
     plot_LOS_defs.chord = '12'
     plot_LOS_defs.llim = [5.3, 5.6]
 
+    # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/jun0617/seq#2/tran',
+    # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may2717/seq#2/tran',
+
     workdir = '/work/bloman/pyproc/'
     # Example
-    savedir = workdir + 'bloman_cmg_catalog_edge2d_jet_81472_sep0617_seq#1'
+    savedir = workdir + 'cstavrou_cmg_catalog_edge2d_jet_81472_may2717_seq#2'
     o = PyprocPlot(savedir)
 
     # Print out results dictionary tree
@@ -179,11 +184,8 @@ if __name__=='__main__':
 
     o.plotProf_ne_te_parbal_atden(p2_kt3a[:,0], ne_kt3a, Te_kt3a, Sion, Srec, n0delL, axobj=ax1)
 
-    savedir = workdir + 'bloman_cmg_catalog_edge2d_jet_81472_sep1217_seq#1'
+    savedir = workdir + 'bloman_cmg_catalog_edge2d_jet_81472_sep1217_seq#3'
     o = PyprocPlot(savedir)
-
-    # Print out results dictionary tree
-    PyprocPlot.pprint_json(o.res_dict['KT3A']['1']['los_int'])
 
     ne_kt3a = o.getLineIntSortedDataByChordidx('KT3A', ['los_int', 'stark', 'fit', 'ne'])
     Te_kt3a = o.getLineIntSortedDataByChordidx('KT3A', ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_360_400'])

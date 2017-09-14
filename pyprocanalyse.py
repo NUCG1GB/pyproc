@@ -5,12 +5,12 @@ import numpy as np
 # import scipy.io as io
 import os, errno
 import json
-from pyproc import pyproc
+from pyproc.pyprocprocess import PyprocProcess
 from pyADASutils import adas_adf15_utils, adas_adf11_utils, continuum_utils
 ## http://lmfit.github.io/lmfit-py/parameters.html
 from lmfit import minimize, Parameters, report_fit
 
-class PyprocAnalyse(pyproc.Pyproc):
+class PyprocAnalyse(PyprocProcess):
     """
         Inherits from Pyproc and adds methods for analysis of synthetic spectra
     """
@@ -338,9 +338,10 @@ if __name__=='__main__':
 
     input_dict = {
         'machine':'JET',
-        # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may1117/seq#2/tran',
+        # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may1117/seq#1/tran',
         'tranfile':'/u/bloman/cmg/catalog/edge2d/jet/81472/sep1217/seq#3/tran',
         # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/jun0617/seq#2/tran',
+        # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may2717/seq#2/tran',
         'diag_list': ['KT3A'],
         # 'diag_list':['KT3A', 'KT1V'],
         'spec_line_dict':spec_line_dict,
