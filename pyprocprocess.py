@@ -10,8 +10,8 @@ from matplotlib.collections import PatchCollection
 from matplotlib import patches
 from scipy.interpolate import interp1d
 from shapely.geometry import Polygon, LineString
-from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 from pyproc.machine_defs import get_DIIIDdefs, get_JETdefs
+from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 
 # font = {'family': 'normal',
 #         'weight': 'normal',
@@ -733,7 +733,7 @@ class PyprocProcess:
         print('Calculating H emission...')
         for cell in self.cells:
             for line_key in self.spec_line_dict['1']['1']:
-                E_excit, E_recom= adas_adf15_utils.get_H_line_emiss(line_key, self.ADAS_dict['adf15']['1']['1'], cell.te, cell.ne*1.0E-06, cell.ni*1.0E-06, cell.n0*1.0E-06)
+                E_excit, E_recom= adas_adf15_read.get_H_line_emiss(line_key, self.ADAS_dict['adf15']['1']['1'], cell.te, cell.ne*1.0E-06, cell.ni*1.0E-06, cell.n0*1.0E-06)
                 cell.H_emiss[line_key] = {'excit':E_excit, 'recom':E_recom, 'units':'ph.s^-1.m^-3.sr^-1'}
 
     def calc_ff_fb_emiss(self, filter_wv_nm, filter_tran):
@@ -745,7 +745,7 @@ class PyprocProcess:
 
         print('Calculating FF+FB emission...')
         for cell in self.cells:
-            ff_only, ff_fb_tot = continuum_utils.adas_continuo_py(wave_nm, cell.te, 1, 1)
+            ff_only, ff_fb_tot = continuo_read.adas_continuo_py(wave_nm, cell.te, 1, 1)
             f = interp1d(wave_nm, ff_fb_tot)
             ff_fb_tot_interp = f(filter_wv_nm)
             # convert to spectral emissivity: ph s-1 m-3 sr-1 nm-1
@@ -816,7 +816,7 @@ class PyprocProcess:
                                 ion_frac_ionbal = self.ADAS_dict['adf11'][req_at_num].ion_bal_frac['ion'][idxne_adf11,idxTe_adf11,int(ion_stage)-1]
                                 ion_frac_parent_ionbal = self.ADAS_dict['adf11'][req_at_num].ion_bal_frac['ion'][idxne_adf11,idxTe_adf11,int(ion_stage)]
 
-                                E_excit, E_recom= adas_adf15_utils.get_imp_line_emiss(line_key, self.ADAS_dict['adf15'][req_at_num][ion_stage], cell.te, cell.ne*1.0E-06, imp_den_parent_stage*1.0E-06, imp_den_ion_stage*1.0E-06)
+                                E_excit, E_recom= adas_adf15_read.get_imp_line_emiss(line_key, self.ADAS_dict['adf15'][req_at_num][ion_stage], cell.te, cell.ne*1.0E-06, imp_den_parent_stage*1.0E-06, imp_den_ion_stage*1.0E-06)
                                 idxTe, valTe = find_nearest(self.ADAS_dict['adf15'][req_at_num][ion_stage][line_key+'recom'].Te_arr, cell.te)
                                 idxne, valne = find_nearest(self.ADAS_dict['adf15'][req_at_num][ion_stage][line_key+'recom'].ne_arr, cell.ne*1.0E-06)
                                 PEC_recom =  self.ADAS_dict['adf15'][req_at_num][ion_stage][line_key+'recom'].pec[idxTe, idxne]
@@ -1880,7 +1880,7 @@ class LOS:
         # sum_ff_fb = np.zeros((len(wave_nm)))
         # for cell in self.cells:
         #     # call adas continuo function (return units: ph s-1 m3 sr-1 nm-1)
-        #     ff_only, ff_fb_tot = continuum_utils.adas_continuo_py(wave_nm, cell.te, 1, 1)
+        #     ff_only, ff_fb_tot = continuo_read.adas_continuo_py(wave_nm, cell.te, 1, 1)
         #     # convert to spectral radiance: ph s-1 m-2 sr-1 nm-1
         #     sum_ff_fb += ff_fb_tot * cell.ne * cell.ne * cell.los_ortho_delL
 
@@ -1889,7 +1889,7 @@ class LOS:
         dl_ff_fb_abs = np.zeros((len(self.los_1d['l']), len(wave_nm)))
         for dl_idx, dl_val in enumerate(self.los_1d['l']):
             # call adas continuo function (return units: ph s-1 m3 sr-1 nm-1)
-            ff_only, ff_fb_tot = continuum_utils.adas_continuo_py(wave_nm, self.los_1d['te'][dl_idx], 1, 1)
+            ff_only, ff_fb_tot = continuo_read.adas_continuo_py(wave_nm, self.los_1d['te'][dl_idx], 1, 1)
             # convert to spectral radiance: ph s-1 m-2 sr-1 nm-1
             dl_ff_fb_abs[dl_idx] = ff_fb_tot * self.los_1d['ne'][dl_idx] * self.los_1d['ne'][dl_idx] * self.los_1d['ortho_delL'][dl_idx]
 
@@ -2260,7 +2260,7 @@ if __name__=='__main__':
     Te_rnge = [0.2, 5000]
     ne_rnge = [1.0e11, 1.0e15]
     ADAS_samples = 10
-    ADAS_dict['adf15'] = adas_adf15_utils.get_adas_imp_PECs_interp(spec_line_dict, Te_rnge, ne_rnge,
+    ADAS_dict['adf15'] = adas_adf15_read.get_adas_imp_PECs_interp(spec_line_dict, Te_rnge, ne_rnge,
                                                                         npts=ADAS_samples, npts_interp=1000)
     # Also get adf11 for the ionisation balance fractional abundance. No Te_arr, ne_arr interpolation
     # available in the adf11 reader at the moment, so generate more coarse array (sloppy!)
@@ -2270,9 +2270,9 @@ if __name__=='__main__':
     ADAS_dict['adf11'] = {}
     for atnum in spec_line_dict:
         if int(atnum) > 1:
-            ADAS_dict['adf11'][atnum] = adas_adf11_utils.get_adas_imp_adf11(int(atnum), Te_arr_adf11, ne_arr_adf11)
+            ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_imp_adf11(int(atnum), Te_arr_adf11, ne_arr_adf11)
         elif int(atnum) == 1:
-            ADAS_dict['adf11'][atnum] = adas_adf11_utils.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
+            ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
                                                                                       npts=ADAS_samples,
                                                                                       npts_interp=1000, pwr=True)
 

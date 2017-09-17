@@ -339,7 +339,7 @@ if __name__=='__main__':
     input_dict = {
         'machine':'JET',
         # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may1117/seq#1/tran',
-        'tranfile':'/u/bloman/cmg/catalog/edge2d/jet/81472/sep1217/seq#3/tran',
+        'tranfile':'/u/bloman/cmg/catalog/edge2d/jet/81472/sep1517/seq#1/tran',
         # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/jun0617/seq#2/tran',
         # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may2717/seq#2/tran',
         'diag_list': ['KT3A'],
