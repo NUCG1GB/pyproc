@@ -13,6 +13,10 @@ from pyproc import pyprocprocess
 from pyproc.pyprocanalyse import PyprocAnalyse
 from pyproc.pyprocprocess import PyprocProcess
 
+def find_nearest(array, value):
+    idx = (np.abs(array - value)).argmin()
+    return idx, array[idx]
+
 class PyprocPlot():
     """
         Class for retrieving, reducing and plotting pyproc saved data
@@ -60,11 +64,6 @@ class PyprocPlot():
         return self.__res_dict
 
     @staticmethod
-    def find_nearest(array, value):
-        idx = (np.abs(array - value)).argmin()
-        return idx, array[idx]
-
-    @staticmethod
     def pprint_json(resdict, indent=0):
         for key, value in resdict.items():
             print('\t' * indent + str(key))
@@ -81,7 +80,7 @@ class PyprocPlot():
 
     # get item from nested dict
     @staticmethod
-    def getFromDict(dataDict, mapList):
+    def get_from_dict(dataDict, mapList):
         return reduce(operator.getitem, mapList, dataDict)
 
     def plot_profiles(self):
@@ -92,14 +91,14 @@ class PyprocPlot():
         color = self.plot_dict['prof_param_defs']['color']
         zorder = self.plot_dict['prof_param_defs']['zorder']
 
-        ne = self.getLineIntSortedDataByChordID(diag, ['los_int', 'stark', 'fit', 'ne'])
-        Te_hi = self.getLineIntSortedDataByChordID(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_360_400'])
-        Te_lo = self.getLineIntSortedDataByChordID(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_300_360'])
+        ne = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'stark', 'fit', 'ne'])
+        Te_hi = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_360_400'])
+        Te_lo = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_300_360'])
 
-        Sion_adf11 = self.getLineIntSortedDataByChordID(diag, ['los_int', 'adf11_fit', 'Sion'])
-        Srec_adf11 = self.getLineIntSortedDataByChordID(diag, ['los_int', 'adf11_fit', 'Srec'])
-        n0delL = self.getLineIntSortedDataByChordID(diag, ['los_int', 'Ly_alpha_fit', 'n0delL'])
-        p2 = self.getLineIntSortedDataByChordID(diag, ['chord', 'p2'])
+        Sion_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Sion'])
+        Srec_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Srec'])
+        n0delL = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Ly_alpha_fit', 'n0delL'])
+        p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
 
         # Ne
         axs[0].plot(p2[:,0], ne, c=color, lw=2, zorder=zorder)
@@ -118,6 +117,19 @@ class PyprocPlot():
 
         # N0
         axs[3].semilogy(p2[:,0], n0delL, c=color, lw=2, zorder=zorder)
+
+        # plot ne, Te profiles at max ne along LOS
+        if self.plot_dict['prof_param_defs']['include_pars_at_max_ne_along_LOS']:
+            ne_max = self.get_param_at_max_ne_along_los(diag, 'ne')
+            Te_max = self.get_param_at_max_ne_along_los(diag, 'te')
+            axs[0].plot(p2[:, 0], ne_max, '-', c='darkgray', lw=2, zorder=1)
+            axs[1].plot(p2[:, 0], Te_max, '-', c='darkgray', lw=2, zorder=1)
+
+        if self.plot_dict['prof_param_defs']['include_sum_Sion_Srec']:
+            Sion = self.get_line_int_sorted_data_by_chord_id(diag, ['los_1d', 'Sion', 'val'])
+            Srec = self.get_line_int_sorted_data_by_chord_id(diag, ['los_1d', 'Srec ', 'val'])
+            axs[2].plot(p2[:, 0], Sion, '-', c='darkgray', lw=2, zorder=1)
+            axs[2].plot(p2[:, 0], Srec, '--', c='darkgray', lw=2, zorder=1)
 
         # legend
         # axes_dict['main'][0].plot([0, 0], [0, 0], c=sim_c, lw=2, label='simulation')
@@ -148,18 +160,18 @@ class PyprocPlot():
         diag = self.plot_dict['prof_Hemiss_defs']['diag']
         color = self.plot_dict['prof_Hemiss_defs']['color']
         zorder = self.plot_dict['prof_Hemiss_defs']['zorder']
-        p2 = self.getLineIntSortedDataByChordID(diag, ['chord', 'p2'])
+        p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
 
         for i, line in enumerate(lines.keys()):
-            excit = self.getLineIntSortedDataByChordID(diag, ['los_int', 'H_emiss', line, 'excit'])
-            recom = self.getLineIntSortedDataByChordID(diag, ['los_int', 'H_emiss', line, 'recom'])
+            excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', line, 'excit'])
+            recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', line, 'recom'])
             axs[i].plot(p2[:,0], excit+recom, '-', lw=2, c=color[i], zorder=zorder, label=line)
             axs[i].plot(p2[:,0], excit, '--', lw=1, c=color[i], zorder=zorder, label=line+' excit')
             axs[i].plot(p2[:,0], recom, ':', lw=1, c=color[i], zorder=zorder, label=line+' recom')
 
             axs[i].legend(loc='upper right')
 
-    def getLineIntSortedDataByChordID(self, diag, mapList):
+    def get_line_int_sorted_data_by_chord_id(self, diag, mapList):
         """
             input:
                 mapList: list of dict keys below the 'chord' level (e.g., ['los_int', 'stark', 'fit', 'ne']
@@ -168,7 +180,7 @@ class PyprocPlot():
         tmp = []
         chordidx = []
         for chord in self.__res_dict[diag]:
-            parval = PyprocPlot.getFromDict(self.__res_dict[diag][chord], mapList)
+            parval = PyprocPlot.get_from_dict(self.__res_dict[diag][chord], mapList)
             # if isinstance(parval, float):
             tmp.append(parval)
             chordidx.append(int(chord)-1)
@@ -247,38 +259,40 @@ class PyprocPlot():
             plt.savefig(title + '.png', dpi=plt.gcf().dpi)
 
 
-    # def get1DdataAtMaxLOSElecDen(self, diag, paramstr, nAvgNeighbs=2):
-    #
-    #     ne_los_1d_max_idx, val = find_nearest(res_dict[diag_key][chord_key]['los_1d']['ne'],
-    #                                           np.max(res_dict[diag_key][chord_key]['los_1d']['ne']))
-    #     # Find n0, Te corresponding to max ne along LOS (include nearest neighbours and average)
-    #     if (ne_los_1d_max_idx + 1) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
-    #         ne_los_1d_max.append(
-    #             np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx - 1],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
-    #
-    #     elif (ne_los_1d_max_idx + 2) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
-    #         ne_los_1d_max.append(
-    #             np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
-    #
-    #     elif (ne_los_1d_max_idx + 3) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
-    #         ne_los_1d_max.append(
-    #             np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 2],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
-    #
-    #     else:
-    #         ne_los_1d_max.append(
-    #             np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 3],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 2],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
-    #                                  res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
-    #
-    #
-    #     return sorted_parvals
+    def get_param_at_max_ne_along_los(self, diag, paramstr, nAvgNeighbs=2):
 
-    # def plotLOS(self, include):
+        ne = self.get_line_int_sorted_data_by_chord_id(self, diag, ['los_1d', 'ne'])
+
+        for i, chord in range(len(ne)):
+        ne_los_1d_max_idx, val = find_nearest(self.__res_dict[diag][chord_key]['los_1d']['ne'],
+                                              np.max(self.__res_dict[diag][chord_key]['los_1d']['ne']))
+        # Find parameter value at position corresponding to max ne along LOS (include nearest neighbours and average)
+        if (ne_los_1d_max_idx + 1) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
+            ne_los_1d_max.append(
+                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx - 1],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+
+        elif (ne_los_1d_max_idx + 2) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
+            ne_los_1d_max.append(
+                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+
+        elif (ne_los_1d_max_idx + 3) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
+            ne_los_1d_max.append(
+                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 2],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+
+        else:
+            ne_los_1d_max.append(
+                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 3],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 2],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
+                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+
+
+        return sorted_parvals
+
 
 if __name__=='__main__':
 
@@ -318,21 +332,26 @@ if __name__=='__main__':
     }
 
     plot_dict = {
-        'prof_param_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
-        'prof_Hemiss_defs':{'diag':'KT3A',
-                            'lines':Hlines_dict,
-                            'axs':ax2,
-                            'color':['b', 'r', 'g', 'y', 'm', 'pink', 'orange'],
-                            'zorder':10},
-        'prof_impemiss_defs':{'diag':'KT3A',
-                              'lines':spec_line_dict,
-                              'axs':ax2,
-                              'color':[],
-                              'zorder':10},
+        'prof_param_defs':{'diag': 'KT3A', 'axs': ax1,
+                           'include_pars_at_max_ne_along_LOS': False
+                           'include_sum_Sion_Srec': False,
+                           'include_target_vals': False,
+                           'include_target_vals': False,
+                           'color': 'blue', 'zorder': 10},
+        'prof_Hemiss_defs':{'diag': 'KT3A',
+                            'lines': Hlines_dict,
+                            'axs': ax2,
+                            'color': ['b', 'r', 'g', 'y', 'm', 'pink', 'orange'],
+                            'zorder': 10},
+        'prof_impemiss_defs':{'diag': 'KT3A',
+                              'lines': spec_line_dict,
+                              'axs': ax2,
+                              'color': [],
+                              'zorder': 10},
         # 'los_param_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
         # 'los_Hemiss_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
         # 'los_impemiss_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
-        '2d_defs':{'lines':spec_line_dict, 'diagLOS':['KT3A'], 'Rrng':[2.36, 2.96], 'Zrng':[-1.73, -1.29]}
+        '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3A'], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29]}
     }
 
     o = PyprocPlot(save_dir, plot_dict=plot_dict)

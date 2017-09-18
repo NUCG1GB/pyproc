@@ -7,7 +7,7 @@ import os, errno
 import json
 from pyproc.pyprocprocess import PyprocProcess
 from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
-## http://lmfit.github.io/lmfit-py/parameters.html
+# http://lmfit.github.io/lmfit-py/parameters.html
 from lmfit import minimize, Parameters, report_fit
 
 class PyprocAnalyse(PyprocProcess):
