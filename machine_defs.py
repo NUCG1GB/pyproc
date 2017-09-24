@@ -1,14 +1,14 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy import loadtxt
+from matplotlib import patches
 
 class MachineDefs:
 
-    def __init__(self, name, wall_coords, pulse_ref=90531):
+    def __init__(self, name, wall_poly, pulse_ref=90531):
         self.name = name
         self.pulse_ref = pulse_ref
-        self.__wall_coords = wall_coords
+        self.__wall_poly = wall_poly
         self.__diag_dict = {}
 
     def set_diag_los(self, diag, los_geom):
@@ -16,12 +16,16 @@ class MachineDefs:
             self.__diag_dict[diag] = los_geom
 
     @property
+    def regions(self):
+        return self.__regions
+
+    @property
     def diag_dict(self):
         return self.__diag_dict
 
     @property
-    def wall_coords(self):
-        return self.__wall_coords
+    def wall_poly(self):
+        return self.__wall_poly
 
 def los_width_from_neigbh(los, los_neigh):
     los_m = (los[0,0]-los[1,0]) / (los[0,1]-los[1,1])
@@ -33,7 +37,7 @@ def los_width_from_neigbh(los, los_neigh):
 
     width = 2.* los_mag * np.sin(0.5*theta)
 
-    return width, theta / 2.0
+    return np.abs(width), theta / 2.0
 
 def rotate_los(origin, p2, angle):
     p2_rot = p2 - origin
@@ -47,12 +51,11 @@ def rotate_los(origin, p2, angle):
 
 def get_JETdefs(plot_defs = False, pulse_ref = 90531):
 
-    wall_coords = np.array((
-        [0,0],[0,0]
-    ))
+    fwall = 'JETdefs/wall.txt'
+    wall_coords = np.genfromtxt(fwall, delimiter=' ')
+    wall_poly = patches.Polygon(wall_coords, closed=False, ec='k', lw=2.0, fc='None', zorder=10)
 
-    JET = MachineDefs('JET', wall_coords, pulse_ref = pulse_ref)
-
+    JET = MachineDefs('JET', wall_poly, pulse_ref = pulse_ref)
 
     # DIAGNOSTIC LOS DEFINITIONS: [r1, z1], [r2, z2], [w1, w2] for each LOS
 
@@ -95,7 +98,7 @@ def get_JETdefs(plot_defs = False, pulse_ref = 90531):
     los_dict['id'] = []
     for id in range(len(kt3a_los)):
         los_dict['id'].append(str(id+1))
-    JET.set_diag_los('KT3A', los_dict)
+    JET.set_diag_los('KT3', los_dict)
 
     ###############
     # KT1V
@@ -165,15 +168,85 @@ def get_JETdefs(plot_defs = False, pulse_ref = 90531):
     # KB5 (including pulse dependent configurations)
     ###############
     #Default vs. re-configured sight line config
-    # if JET.pulse_ref >=73758 and JET.pulse_ref <=82263:
-    #     file = 'KB5_Bolometer_LOS_73758_82263.txt'
-    # else:
-    #     file = 'KB5_Bolometer_LOS_default.txt'
-    # lines = loadtxt(file, comments="#", delimiter=" ", unpack=False)
-    #
-    # print('')
+    if JET.pulse_ref >=73758 and JET.pulse_ref <=82263:
+        file = 'JETdefs/KB5_Bolometer_LOS_73758_82263.txt'
+    else:
+        file = 'JETdefs/KB5_Bolometer_LOS_default.txt'
+    lines = np.genfromtxt(file, dtype=list, delimiter="\t", skiprows=3)
+
+    # KB5
+    kb5v_los = np.zeros((24, 3, 2))
+    kb5v_los_half_angular_extent = np.zeros((24))
+    kb5v_los_angle = np.zeros((24))
+    kb5h_los = np.zeros((24, 3, 2))
+    kb5h_los_half_angular_extent = np.zeros((24))
+    kb5h_los_angle = np.zeros((24))
+    # determine end point width using half angle between adjacent sight lines
+    for i, los in enumerate(lines):
+        if los[0] == b'KB5V':
+            if int(los[1]) >= 1 and int(los[1]) <=24 and int(los[1]) != 8 \
+                    and int(los[1]) != 16 and int(los[1]) != 24:
+                origin = [float(lines[i][4]), float(lines[i][5])]
+                p2 = [float(lines[i][6]), float(lines[i][7])]
+                origin_neighb = [float(lines[i+1][4]), float(lines[i+1][5])]
+                p2_neighb = [float(lines[i+1][6]), float(lines[i+1][7])]
+            elif int(los[1]) == 8 or int(los[1]) == 16 or int(los[1]) == 24:
+                origin = [float(lines[i][4]), float(lines[i][5])]
+                p2 = [float(lines[i][6]), float(lines[i][7])]
+                origin_neighb = [float(lines[i-1][4]), float(lines[i-1][5])]
+                p2_neighb = [float(lines[i-1][6]), float(lines[i-1][7])]
+
+            if int(los[1]) >= 1 and int(los[1]) <= 24:
+                width, half_angle = los_width_from_neigbh(np.array((origin, p2)), np.array((origin_neighb, p2_neighb)))
+                kb5v_los[i, 0] = origin
+                kb5v_los[i, 1] = p2
+                kb5v_los[i, 2] = [0, width]
+                kb5v_los_half_angular_extent[i] = half_angle
+                kb5v_los_angle[i] = los[8]
+        if los[0] == b'KB5H':
+            if int(los[1]) >= 1 and int(los[1]) <=24 and int(los[1]) != 8 and int(los[1]) != 24:
+                origin = [float(lines[i][4]), float(lines[i][5])]
+                p2 = [float(lines[i][6]), float(lines[i][7])]
+                origin_neighb = [float(lines[i+1][4]), float(lines[i+1][5])]
+                p2_neighb = [float(lines[i+1][6]), float(lines[i+1][7])]
+            elif int(los[1]) == 8 or int(los[1]) == 24:
+                origin = [float(lines[i][4]), float(lines[i][5])]
+                p2 = [float(lines[i][6]), float(lines[i][7])]
+                origin_neighb = [float(lines[i-1][4]), float(lines[i-1][5])]
+                p2_neighb = [float(lines[i-1][6]), float(lines[i-1][7])]
+
+            if int(los[1]) >= 1 and int(los[1]) <= 24:
+                width, half_angle = los_width_from_neigbh(np.array((origin, p2)), np.array((origin_neighb, p2_neighb)))
+                kb5h_los[i-32, 0] = origin
+                kb5h_los[i-32, 1] = p2
+                kb5h_los[i-32, 2] = [0, width]
+                kb5h_los_half_angular_extent[i-32] = half_angle
+                kb5h_los_angle[i-32] = los[8]
+
+    los_dict = {}
+    los_dict['p1'] = kb5v_los[:,0]
+    los_dict['p2'] = kb5v_los[:,1]
+    los_dict['w'] = kb5v_los[:,2]
+    los_dict['id'] = []
+    for id in range(len(kb5v_los)):
+        los_dict['id'].append(str(id+1))
+    los_dict['half_angular_extent'] = kb5v_los_half_angular_extent
+    los_dict['angle'] = kb5v_los_angle
+    JET.set_diag_los('KB5V', los_dict)
+
+    los_dict = {}
+    los_dict['p1'] = kb5h_los[:,0]
+    los_dict['p2'] = kb5h_los[:,1]
+    los_dict['w'] = kb5h_los[:,2]
+    los_dict['id'] = []
+    for id in range(len(kb5h_los)):
+        los_dict['id'].append(str(id+1))
+    los_dict['half_angle'] = kb5h_los_half_angular_extent
+    los_dict['angle'] = kb5h_los_angle
+    JET.set_diag_los('KB5H', los_dict)
 
     if plot_defs:
+        plt.gca().add_patch(wall_poly)
         for i, los in enumerate(JET.diag_dict['KT3A']['id']):
             plt.plot([JET.diag_dict['KT3A']['p1'][i,0], JET.diag_dict['KT3A']['p2'][i, 0]],
                      [JET.diag_dict['KT3A']['p1'][i,1], JET.diag_dict['KT3A']['p2'][i, 1]],
@@ -193,21 +266,38 @@ def get_JETdefs(plot_defs = False, pulse_ref = 90531):
             plt.plot([JET.diag_dict['KT1V']['p1'][i,0], p2_rot2[0]],
                      [JET.diag_dict['KT1V']['p1'][i,1], p2_rot2[1]], ':r')
 
-            # p2_rot = rotate_los(los[0], los[1], kt1v_los_half_angle[i])
-            # plt.plot([los[0, 0], p2_rot[0]], [los[0, 1], p2_rot[1]], ':r')
-            # p2_rot2 = rotate_los(los[0], los[1], -1.0*kt1v_los_half_angle[i])
-            # plt.plot([los[0, 0], p2_rot2[0]], [los[0, 1], p2_rot2[1]], ':r')
+        for i, los in enumerate(JET.diag_dict['KB5V']['id']):
+            if i+1 >= 1 and i+1 <=24:
+                plt.plot([JET.diag_dict['KB5V']['p1'][i, 0], JET.diag_dict['KB5V']['p2'][i, 0]],
+                         [JET.diag_dict['KB5V']['p1'][i, 1], JET.diag_dict['KB5V']['p2'][i, 1]],
+                         '-r')
+                plt.text(2.5, 2 + 0.4, 'KB5V', color='red')
+                p2_rot = rotate_los(JET.diag_dict['KB5V']['p1'][i],
+                                    JET.diag_dict['KB5V']['p2'][i], kb5v_los_half_angular_extent[i])
+                plt.plot([JET.diag_dict['KB5V']['p1'][i, 0], p2_rot[0]],
+                         [JET.diag_dict['KB5V']['p1'][i, 1], p2_rot[1]], ':r')
+
+        for i, los in enumerate(JET.diag_dict['KB5H']['id']):
+            if i+1 >= 1 and i+1 <=24:
+                plt.plot([JET.diag_dict['KB5H']['p1'][i, 0], JET.diag_dict['KB5H']['p2'][i, 0]],
+                         [JET.diag_dict['KB5H']['p1'][i, 1], JET.diag_dict['KB5H']['p2'][i, 1]],
+                         '-r')
+                plt.text(2.5, 2 + 0.4, 'KB5H', color='red')
+                p2_rot = rotate_los(JET.diag_dict['KB5H']['p1'][i],
+                                    JET.diag_dict['KB5H']['p2'][i], kb5h_los_half_angular_extent[i])
+                plt.plot([JET.diag_dict['KB5H']['p1'][i, 0], p2_rot[0]],
+                         [JET.diag_dict['KB5H']['p1'][i, 1], p2_rot[1]], ':r')
+
+        plt.axes().set_aspect('equal')
         plt.show()
 
     return JET
 
 
 def get_DIIIDdefs():
-    wall_coords = np.array((
-        [], []
-    ))
+    wall_poly = None
 
-    DIIID = MachineDefs('DIIID', wall_coords)
+    DIIID = MachineDefs('DIIID', wall_poly)
 
     # define diagnostics
     # DIIID.set_diag_los('')

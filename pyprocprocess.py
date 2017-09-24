@@ -25,8 +25,8 @@ from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 # matplotlib.rcParams['mathtext.fontset'] = 'custom'
 # matplotlib.rcParams['mathtext.rm'] = prop.get_name()
 
-at_sym = ['H','HE','LI','BE','B','C','N','O','F','NE','NA','MG',
-          'AL','SI','P','S','CL','AR','K','CA','SC','TI','V','CR',
+at_sym = ['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg',
+          'Al','SI','P','S','CL','AR','K','CA','SC','TI','V','CR',
           'MN','FE','CO','NI','CU','ZN','GA','GE','AS','SE','BR',
           'KR','RB','SR','Y','ZR','NB','MO','TC','RU','RH','PD',
           'AG','CD','IN','SN','SB','TE','I','XE','CS','BA','LA',
@@ -45,11 +45,44 @@ def gaussian(cwl, wv, area, fwhm):
     g = area * (1./(sigma*np.sqrt(2.*np.pi))) * np.exp(-1.*((wv - cwl)**2) / (2*(sigma**2)) )
     return g
 
+class Region:
+
+    def __init__(self, name, Rmin, Rmax, Zmin, Zmax, include_confined=True, include_SOL=True, include_PFR=True):
+        self.name = name
+        self.Rmin = Rmin
+        self.Rmax = Rmax
+        self.Zmin = Zmin
+        self.Zmax = Zmax
+        self.include_confined = include_confined
+        self.include_SOL = include_SOL
+        self.include_PFR= include_PFR
+
+        # container of cell objects belonging to the region
+        self.cells = []
+
+        # Total radiated power - main and impuritiy ions
+        self.Prad_H = 0.0
+        self.Prad_imp1 = 0.0
+        self.Prad_imp2 = 0.0
+        self.Prad_units = 'W'
+
+    def cell_in_region(self, cell, shply_sep_poly):
+
+        if cell.Z >= self.Zmin and cell.Z <= self.Zmax and cell.R >= self.Rmin and cell.R <= self.Rmax:
+            if self.include_confined and shply_sep_poly.contains(cell.poly):
+                return True
+            if self.include_SOL and not shply_sep_poly.contains(cell.poly):
+                return True
+            if self.include_PFR and shply_sep_poly.contains(cell.poly):
+                return True
+
+        return False
+    
 class PyprocProcess:
     """
         Class to read and store EDGE2D-EIRENE results
     """
-    def __init__(self, ADAS_dict, tranfile='', machine='JET', interactive_plots = False,
+    def __init__(self, ADAS_dict, tranfile='', machine='JET', pulse=90531, interactive_plots = False,
                  spec_line_dict=None, diag_list=None, calc_synth_spec_features=None,
                  calc_NII_afg_feature=False, save_synth_diag=False,
                  synth_diag_save_file=None, data2d_save_file=None):
@@ -57,6 +90,9 @@ class PyprocProcess:
         self.ADAS_dict = ADAS_dict
         self.tranfile = tranfile
         self.machine = machine
+        self.pulse = pulse
+
+        self.regions = {}
 
         #Flags
         self.calc_NII_afg_feature = calc_NII_afg_feature
@@ -102,16 +138,38 @@ class PyprocProcess:
         self.imp2_chrg_idx = []
         self.imp1_denz = []
         self.imp2_denz = []
-        self.imp1_adf11 = None
-        self.imp2_adf11 = None
 
         # Dictionary for storing synthetic diagnostic objects
         self.synth_diag = {}
 
         self.readtran_eproc_idl_temp()
 
-        # self.plot_regions()
-        # plt.show()
+        # Get machine definitions
+        if self.machine == 'JET':
+            self.defs = get_JETdefs(pulse_ref=self.pulse)
+            # Define regions for JET
+            self.Zdiv = -1.2
+            self.regions['vessel'] = Region('vessel', Rmin=0, Rmax=10, Zmin=-10, Zmax=10,
+                                    include_confined=True, include_SOL=True, include_PFR=True)
+
+            self.regions['hfs_sol'] = Region('hfs_sol', Rmin=0, Rmax=self.geom['rpx'], Zmin=self.Zdiv, Zmax=10,
+                                    include_confined=False, include_SOL=True, include_PFR=False)
+            self.regions['lfs_sol'] = Region('lfs_sol', Rmin=self.geom['rpx'], Rmax=10, Zmin=self.Zdiv, Zmax=10,
+                                    include_confined=False, include_SOL=True, include_PFR=False)
+            self.regions['hfs_div'] = Region('hfs_div', Rmin=0, Rmax=self.geom['rpx'], Zmin=-10, Zmax=self.Zdiv,
+                                    include_confined=False, include_SOL=True, include_PFR=False)
+            self.regions['lfs_div'] = Region('lfs_div', Rmin=self.geom['rpx'], Rmax=10, Zmin=-10, Zmax=self.Zdiv,
+                                    include_confined=False, include_SOL=True, include_PFR=False)
+            self.regions['xpt_conreg'] = Region('xpt_conreg', Rmin=2.3, Rmax=2.95, Zmin=self.geom['zpx'], Zmax=-0.80,
+                                    include_confined=True, include_SOL=False, include_PFR=False)
+            self.regions['hfs_lower'] = Region('hfs_lower', Rmin=0, Rmax=self.geom['rpx'], Zmin=-10, Zmax=self.Zdiv,
+                                    include_confined=True, include_SOL=True, include_PFR=True)
+            self.regions['lfs_lower'] = Region('lfs_lower', Rmin=self.geom['rpx'], Rmax=10, Zmin=-10, Zmax=self.Zdiv,
+                                    include_confined=True, include_SOL=True, include_PFR=True)
+            self.regions['rhon_09_10'] = Region('rhon_09_10', Rmin=0, Rmax=10, Zmin=self.geom['zpx'], Zmax=10,
+                                    include_confined=True, include_SOL=False, include_PFR=False)
+        elif self.machine == 'DIID':
+            self.defs = get_DIIIDdefs()
 
         self.calc_H_emiss()
         self.calc_H_rad_power()
@@ -135,17 +193,12 @@ class PyprocProcess:
             # plt.show()
 
 
-        # CALULCATE PRAD CORRESPONDING TO BORP MACRO REGIONS
-        # NOTE: Divertor Prad below Z=-1.2, not Z=Zxpt (consistent with ppfuid='bloman' BORP processing)
-        self.calc_BORP()
+        # CALULCATE PRAD IN DEFINED MACRO REGIONS
+        if self.regions:
+            self.calc_regions_rad_power()
+
         # CALCULATE POWER FLOW INTO INNER AND OUTER DIVERTOR AT Z=-1.2
         self.calc_qpol_div()
-
-        # Get machine definitions
-        if self.machine == 'JET':
-            self.defs = get_JETdefs()
-        elif self.machine == 'DIID':
-            self.defs = get_DIIIDdefs()
 
         if diag_list:
             for key in diag_list:
@@ -161,6 +214,11 @@ class PyprocProcess:
                     # Zrng = [-1.73, -1.29]
                     # self.plot_imp_lines('7', '2', '5005.86', diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
                     # plt.show()
+                    # if interactive_plots:
+                    #     self.plot_te_ne_n0()
+                    #     if diag_list:
+                    #         for key in diag_list:
+                    #             self.synth_diag[key].plot_synth_spec_edge2d_data()
                         chord.calc_int_and_1d_los_quantities()
                         if calc_synth_spec_features:
                             print('Calculating synthetic spectra for diag: ', key)
@@ -172,7 +230,6 @@ class PyprocProcess:
 
         if data2d_save_file:
             # pickle serialization of e2deirpostproc object
-            # delete ADAS_dict object to save space
             output = open(data2d_save_file, 'wb')
             pickle.dump(self, output)
             output.close()
@@ -185,11 +242,11 @@ class PyprocProcess:
                     self.synth_diag[key].plot_synth_spec_edge2d_data()
 
             self.plot_H_lines()
-            
+
             #
             Rrng = [2.36, 2.96]
             Zrng = [-1.73, -1.29]
-            self.plot_ff_fb_filtered_emiss(diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
+            self.plot_ff_fb_filtered_emiss(diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
 
             plt.show()
 
@@ -200,9 +257,9 @@ class PyprocProcess:
 
                 Rrng = [2.36, 2.96]
                 Zrng = [-1.73, -1.29]
-                self.plot_imp_lines('7', '4', '3481.83', diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-                self.plot_imp_lines('7', '3', '4100.51', diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-                self.plot_imp_lines('7', '2', '5005.86', diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
+                self.plot_imp_lines('7', '4', '3481.83', diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
+                self.plot_imp_lines('7', '3', '4100.51', diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
+                self.plot_imp_lines('7', '2', '5005.86', diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
 
             plt.show()
 
@@ -235,10 +292,12 @@ class PyprocProcess:
                     # outdict[diag_key][chord.chord_num]['los_1d'].update({spectrum: chord.los_1d_spectra[spectrum]})
                 # outdict[diag_key][chord.chord_num]['Srec'] = chord.los_int['Srec']
                 # outdict[diag_key][chord.chord_num]['Sion'] = chord.los_int['Sion']
-                if chord.shply_intersects_w_sep:
+                if chord.shply_intersects_w_sep and diag_key=='KT3':
                     outdict[diag_key][chord.chord_num].update({'chord':{'p1':chord.p1, 'p2':chord.p2unmod, 'w2':chord.w2unmod, 'sep_intersect_below_xpt':[chord.shply_intersects_w_sep.coords.xy[0][0],chord.shply_intersects_w_sep.coords.xy[1][0]]}})
                 else:
                     outdict[diag_key][chord.chord_num].update({'chord':{'p1':chord.p1, 'p2':chord.p2unmod, 'w2':chord.w2unmod, 'sep_intersect_below_xpt':None}})
+                if chord.los_angle:
+                    outdict[diag_key][chord.chord_num]['chord']['los_angle'] = chord.los_angle
 
         # SAVE IN JSON FORMAT TO ENSURE PYTHON 2/3 COMPATIBILITY
         with open (savefile, mode='w', encoding='utf-8') as f:
@@ -495,6 +554,9 @@ class PyprocProcess:
         wall_poly_pts.append(wall_poly_pts[0]) # connect last point to first to complete wall polygon
 
         self.wall_poly = patches.Polygon(wall_poly_pts, closed=False, ec='k', lw=2.0, fc='None', zorder=10)
+        # filename = 'wall.txt'
+        # rzwall = np.asarray(self.wall_poly.get_xy())
+        # np.savetxt(filename, rzwall, newline='\n')
         self.shply_wall_poly = Polygon(self.wall_poly.get_xy())
 
     def readtran_eproc_idl(self):
@@ -684,7 +746,7 @@ class PyprocProcess:
             k+=1
         sep_points_below_xpt.append((self.geom['rpx'], self.geom['zpx']))
 
-        self.sep_poly = patches.Polygon(sep_points, closed=False, ec='w', linestyle='dashed', lw=2.0, fc='None', zorder=10)
+        self.sep_poly = patches.Polygon(sep_points, closed=False, ec='pink', linestyle='dashed', lw=2.0, fc='None', zorder=10)
         self.shply_sep_poly = Polygon(self.sep_poly.get_xy())
         self.sep_poly_below_xpt = patches.Polygon(sep_points_below_xpt, closed=False, ec='k', fc='None', zorder=10)
         self.shply_sep_poly_below_xpt = Polygon(self.sep_poly_below_xpt.get_xy())
@@ -835,7 +897,6 @@ class PyprocProcess:
         e2d_imps = self.zch['data'][0:2]
         for e2d_imp_idx, e2d_at_num in enumerate(e2d_imps):
             if e2d_imp_idx == 0: # impurity 1
-                # self.imp1_adf11 = adas_adf11_utils.get_adas_imp_adf11(e2d_at_num, Te_arr, ne_arr)
                 print('Calculating impurity (atomic num. =' , e2d_at_num, ') power...')
                 sum_pwr = 0
                 for cell in self.cells:
@@ -860,7 +921,6 @@ class PyprocProcess:
                 print('Total power (atomic num. =' , e2d_at_num, '):', sum_pwr, ' [W]')
                 self.Prad_imp1 = sum_pwr
             else: # impurity 2
-                # self.imp2_adf11 = adas_adf11_utils.get_adas_imp_adf11(e2d_at_num, Te_arr, ne_arr)
                 print('Calculating impurity (atomic num. =' , e2d_at_num, ') power...')
                 sum_pwr = 0
                 for cell in self.cells:
@@ -975,127 +1035,38 @@ class PyprocProcess:
         print('Pdiv_LFS (MW): ', self.qpol_div_LFS*1.e-06, 'Pdiv_HFS (MW): ', self.qpol_div_HFS*1.e-06, 'POWSOL (MW): ', self.powsol['data'][0]*1.e-06)
 
 
+    def calc_regions_rad_power(self):
+
+        for regname, region in self.regions.items():
+            for cell in self.cells:
+                if region.cell_in_region(cell, self.shply_sep_poly):
+                    region.cells.append(cell)
+                    region.Prad_units = 'W'
+                    region.Prad_H += cell.H_radpwr
+                    if self.imp1_atom_num:
+                        region.Prad_imp1 += np.sum(cell.imp1_radpwr)
+                    if self.imp2_atom_num:
+                        region.Prad_imp2 += np.sum(cell.imp2_radpwr)
 
 
-    def calc_BORP(self):
-        self.BORP = {}
+    def plot_region(self, name='LFS_DIV'):
 
-        # H/D power
-        PR4_H = [] # HFS-SOL
-        PR5_H = [] # LFS-SOL
-        PR6_H = [] # HFS-DIV
-        PR7_H = [] # LFS-DIV
-        PR8_H = [] # Xpt-ConReg
-        PR11_H = [] # HFS-Lower
-        PR12_H = [] # LFS-Lower
-        PR14_H = [] # rhoN=0.9-1.0
-
-        # imp1 power
-        PR4_imp1 = [] # HFS-SOL
-        PR5_imp1 = [] # LFS-SOL
-        PR6_imp1 = [] # HFS-DIV
-        PR7_imp1 = [] # LFS-DIV
-        PR8_imp1 = [] # Xpt-ConReg
-        PR11_imp1 = [] # HFS-Lower
-        PR12_imp1 = [] # LFS-Lower
-        PR14_imp1 = [] # rhoN=0.9-1.0
-        
-        # imp2 power
-        PR4_imp2 = [] # HFS-SOL
-        PR5_imp2 = [] # LFS-SOL
-        PR6_imp2 = [] # HFS-DIV
-        PR7_imp2 = [] # LFS-DIV
-        PR8_imp2 = [] # Xpt-ConReg
-        PR11_imp2 = [] # HFS-Lower
-        PR12_imp2 = [] # LFS-Lower
-        PR14_imp2 = [] # rhoN=0.9-1.0        
-
-        Zdiv = -1.2
-
-        for cell in self.cells:
-            # HFS-SOL
-            if not self.shply_sep_poly.contains(cell.poly) and cell.Z >= Zdiv and cell.R <= self.geom['rpx']:
-                PR4_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR4_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR4_imp2.append(np.sum(cell.imp2_radpwr))                    
-            # LFS-SOL
-            if not self.shply_sep_poly.contains(cell.poly) and cell.Z >= Zdiv and cell.R >= self.geom['rpx']:
-                PR5_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR5_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR5_imp2.append(np.sum(cell.imp2_radpwr)) 
-            # HFS-DIV
-            if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= Zdiv and cell.R <= self.geom['rpx']:
-                PR6_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR6_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR6_imp2.append(np.sum(cell.imp2_radpwr)) 
-            # LFS-DIV
-            if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= Zdiv and cell.R >= self.geom['rpx']:
-                PR7_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR7_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR7_imp2.append(np.sum(cell.imp2_radpwr))
-            # Xpt-ConReg
-            # TODO: Xpt-ConReg define region using edge2d rows/rings
-            if self.shply_sep_poly.contains(cell.poly) and cell.Z >= self.geom['zpx'] and cell.Z <= -0.80 and cell.R >= 2.3 and cell.R <= 2.95:
-                PR8_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR8_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR8_imp2.append(np.sum(cell.imp2_radpwr))
-            # HFS-Lower
-            if cell.Z <= Zdiv and cell.R <= self.geom['rpx']:
-                PR11_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR11_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR11_imp2.append(np.sum(cell.imp2_radpwr)) 
-            # LFS-Lower
-            if cell.Z <= Zdiv and cell.R >= self.geom['rpx']:
-                PR12_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR12_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR12_imp2.append(np.sum(cell.imp2_radpwr)) 
-            # rhoN=0.9-1.0
-            if self.shply_sep_poly.contains(cell.poly) and cell.Z >= self.geom['zpx']:
-                PR14_H.append(cell.H_radpwr)
-                if self.imp1_atom_num:
-                    PR14_imp1.append(np.sum(cell.imp1_radpwr))
-                if self.imp2_atom_num:
-                    PR14_imp2.append(np.sum(cell.imp2_radpwr)) 
-
-        # Sum up and store
-        self.BORP['PR4'] = {'region':'HFS-SOL', 'H':np.sum(PR4_H), 'imp1':np.sum(PR4_imp1), 'imp2':np.sum(PR4_imp2), 'units':'W'}
-        self.BORP['PR5'] = {'region':'LFS-SOL', 'H':np.sum(PR5_H), 'imp1':np.sum(PR5_imp1), 'imp2':np.sum(PR5_imp2), 'units':'W'}
-        self.BORP['PR6'] = {'region':'HFS-DIV', 'H':np.sum(PR6_H), 'imp1':np.sum(PR6_imp1), 'imp2':np.sum(PR6_imp2), 'units':'W'}
-        self.BORP['PR7'] = {'region':'LFS-DIV', 'H':np.sum(PR7_H), 'imp1':np.sum(PR7_imp1), 'imp2':np.sum(PR7_imp2), 'units':'W'}
-        self.BORP['PR8'] = {'region':'Xpt-ConReg', 'H':np.sum(PR8_H), 'imp1':np.sum(PR8_imp1), 'imp2':np.sum(PR8_imp2), 'units':'W'}
-        self.BORP['PR11'] = {'region':'HFS-Lower', 'H':np.sum(PR11_H), 'imp1':np.sum(PR11_imp1), 'imp2':np.sum(PR11_imp2), 'units':'W'}
-        self.BORP['PR12'] = {'region':'LFS-Lower', 'H':np.sum(PR12_H), 'imp1':np.sum(PR12_imp1), 'imp2':np.sum(PR12_imp2), 'units':'W'}
-        self.BORP['PR14'] = {'region':'rhoN=0.9-1.0', 'H':np.sum(PR14_H), 'imp1':np.sum(PR14_imp1), 'imp2':np.sum(PR14_imp2), 'units':'W'}
-
-
-    def plot_regions(self):
-        fig, ax = plt.subplots(ncols=1, sharex=True, sharey=True)
+        fig, ax = plt.subplots(ncols=1)
         region_patches = []
-        Zdiv=-1.2
-        for cell in self.cells:
-            # check if cell lies within los.poly
-            if self.shply_sep_poly.contains(cell.poly) and cell.Z >= self.geom['zpx'] and cell.Z <= -0.80 and cell.R >= 2.3 and cell.R <= 2.95:
-            # if not self.shply_sep_poly.contains(cell.poly) and cell.Z >= -1.2 and cell.R >= self.geom['rpx']:
-                region_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=False))
+        for regname, region in self.regions.items():
+            if regname == name:
+                for cell in region.cells:
+                    region_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=False))
+
         # region_patches.append(patches.Polygon(self.shply_sep_poly.exterior.coords, closed=False))
         coll = PatchCollection(region_patches)
         ax.add_collection(coll)
         ax.set_xlim(1.8, 4.0)
         ax.set_ylim(-2.0, 2.0)
+        ax.set_title(name)
+        ax.add_patch(self.sep_poly)
+        ax.add_patch(self.wall_poly)
+        plt.axes().set_aspect('equal')
 
 
     def plot_te_ne_n0(self):
@@ -1334,8 +1305,6 @@ class PyprocProcess:
             print(line_key, ' not found in post-processed impurity emisison.')
 
     def plot_imp_rad_loss(self, ax1_5by2, ax2_4by1, barspace=0.2, color='b'):
-        # rad loss coeff not very sensitive to elec. density so choose a sensible value
-        ine, vne = find_nearest(self.imp2_adf11.ne_arr, 1.0e14)
 
         # Set up elec. temp bins and labels
         te_bins = [0.5, 2.0, 5.0, 10., 20., 50., 100., 500., 1000.]
@@ -1368,55 +1337,7 @@ class PyprocProcess:
                 main_bin_imp1*=1.0e-06
                 div_bin_lfs_imp1*=1.0e-06
 
-            elif e2d_imp_idx == 1: # impurity 2
 
-                # plot ionisation balance radiative loss coeff
-                ax1_5by2[0].loglog(self.imp2_adf11.Te_arr, 1.0e-06*self.imp2_adf11.ion_bal_pwr['total'][ine,:], '-k', lw=3.0)
-                c = ['b', 'g', 'y', 'm', 'r']
-                for i in range(e2d_at_num-4):
-                    ax1_5by2[0].loglog(self.imp2_adf11.Te_arr, 1.0e-06*self.imp2_adf11.ion_bal_pwr['ion'][ine,:,i], ':', c='k', lw=1.0)
-                    ax1_5by2[i+1].loglog(self.imp2_adf11.Te_arr, 1.0e-06*self.imp2_adf11.ion_bal_pwr['ion'][ine,:,i], '-', c='k', lw=2.0)
-
-                # plot sim rad loss coeff/pwr for each stage
-                imp2_radpwr_coeff_collate = []
-                imp2_radpwr_collate = []
-                te_collate = []
-                for cell in self.cells:
-                    # LFS DIV below Z=-1.2
-                    if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
-                        imp2_radpwr_coeff_collate.append(cell.imp2_radpwr_coeff)
-                        imp2_radpwr_collate.append(cell.imp2_radpwr)
-                        te_collate.append(cell.te)
-                imp2_radpwr_coeff_collate_arr = np.asarray(imp2_radpwr_coeff_collate)
-                imp2_radpwr_collate_arr = np.asarray(imp2_radpwr_collate)
-                te_collate_arr = np.asarray(te_collate)
-                ax1_5by2[0].loglog(te_collate_arr, np.sum(imp2_radpwr_coeff_collate_arr, axis=1), '.', c=color, ms=4, mew=1.0)
-                # ax1_5by2[0].loglog(te_collate_arr, np.sum(imp2_radpwr_collate_arr, axis=1), '.', c='k', ms=4, mew=2.0)
-                for i in range(e2d_at_num-4):
-                    ax1_5by2[i+1].loglog(te_collate_arr, imp2_radpwr_coeff_collate_arr[:,i], '.', c=color, ms=4, mew=1.0)
-                    # ax1_5by2[i+1].loglog(te_collate_arr, imp2_radpwr_collate_arr[:,i], '.', c=c[i], ms=4, mew=2.0)
-                r'$\mathrm{P_{rad,N}\/(W m^{-3}})$'
-                ax1_5by2[0].set_ylabel(r'$\mathrm{P_{rad,N}\/(W m^{3}})$')
-                ax1_5by2[1].set_ylabel(r'$\mathrm{P_{rad,N0+}\/(W m^{3}})$')
-                ax1_5by2[2].set_ylabel(r'$\mathrm{P_{rad,N1+}\/(W m^{3}})$')
-                ax1_5by2[3].set_ylabel(r'$\mathrm{P_{rad,N2+}\/(W m^{3}})$')
-                # ax1_5by2[4].set_ylabel(r'$\mathrm{P_{rad,N3+}\/(W m^{3}})$')
-                # ax1_5by2[5].set_ylabel(r'$\mathrm{P_{rad,N4+}\/(W m^{3}})$')
-                ax1_5by2[3].set_xlabel('Te (eV)')
-                
-                ax1_5by2[0].set_ylim(1.1e-36, 0.9e-31)
-                ax1_5by2[1].set_ylim(1.1e-36, 0.9e-31)
-                ax1_5by2[2].set_ylim(1.1e-36, 0.9e-31)
-                ax1_5by2[3].set_ylim(1.1e-36, 0.9e-31)
-                # ax1_5by2[4].set_ylim(1e-36, 1e-31)
-                # ax1_5by2[5].set_ylim(1e-36, 1e-31)
-
-                ax1_5by2[0].set_xlim(1, 100)
-                ax1_5by2[1].set_xlim(1, 100)
-                ax1_5by2[2].set_xlim(1, 100)
-                ax1_5by2[3].set_xlim(1, 100)
-                # ax1_5by2[4].set_xlim(1, 1000)
-                # ax1_5by2[5].set_xlim(1, 1000)
                 
                 # BIN RADIATE POWER BY MACRO REGION AND TE
                 div_bin_imp2 = np.zeros((e2d_at_num))
@@ -1498,9 +1419,11 @@ class PyprocProcess:
 
 class LOS:
 
-    def __init__(self, los_poly = None, chord_num=None, p1 = None, w1 = None, p2orig = None, p2 = None,
-                 w2orig = None, w2 = None, l12 = None, theta=None, spec_line_dict=None,
+    def __init__(self, diag, los_poly = None, chord_num=None, p1 = None, w1 = None, p2orig = None, p2 = None,
+                 w2orig = None, w2 = None, l12 = None, theta=None, los_angle=None, spec_line_dict=None,
                  imp1_atom_num=None, imp2_atom_num=None, calc_NII_afg_feature=False):
+
+        self.diag = diag
 
         self.calc_NII_afg_feature = calc_NII_afg_feature
 
@@ -1514,6 +1437,7 @@ class LOS:
         self.w2 = w2
         self.l12 = l12
         self.theta = theta
+        self.los_angle = los_angle
         self.cells = []
         self.spec_line_dict = spec_line_dict
         self.imp1_atom_num = imp1_atom_num
@@ -1956,8 +1880,10 @@ class LOS:
         ###############################################################
         # N II AFG feature (399 < wv < 410 nm)
         ###############################################################
-        if self.calc_NII_afg_feature:
+        if self.calc_NII_afg_feature and self.diag == 'KT3':
             if self.imp1_atom_num or self.imp2_atom_num:
+
+                print('Calculating NII ADAS AFG feature ', self.chord_num)
 
                 # ionization balance flag
                 ionbal=0
@@ -2054,6 +1980,10 @@ class SynthDiag:
                 z2 = defs.diag_dict[self.diag]['p2'][i, 1]
                 w1 = defs.diag_dict[self.diag]['w'][i, 0]
                 w2 = defs.diag_dict[self.diag]['w'][i, 1]
+                if 'angle' in defs.diag_dict[self.diag]:
+                    los_angle = defs.diag_dict[self.diag]['angle'][i]
+                else:
+                    los_angle = None
                 theta = np.arctan((r2 - r1) / (z2 - z1))
                 # elongate los to ensure defined LOS intersects machine wall (otherwise grid cells may be excluded)
                 chord_L = np.sqrt((r1 - r2) ** 2 + (z1 - z2) ** 2)
@@ -2061,7 +1991,7 @@ class SynthDiag:
                 p2new[i, 1] = z2 - 1.0 * np.cos(theta)
                 chord_L_elong = np.sqrt((r1 - p2new[i, 0]) ** 2 + (z1 - p2new[i, 1]) ** 2)
                 w2_elong = w2 * chord_L_elong / chord_L
-                self.chords.append(LOS(los_poly=Polygon([(r1, z1),
+                self.chords.append(LOS(self.diag, los_poly=Polygon([(r1, z1),
                                                          (p2new[i, 0] - 0.5 * w2_elong * np.cos(theta),
                                                           p2new[i, 1] + 0.5 * w2_elong * np.sin(theta)),
                                                          (p2new[i, 0] + 0.5 * w2_elong * np.cos(theta),
@@ -2069,7 +1999,7 @@ class SynthDiag:
                                                          (r1, z1)]),
                                        chord_num=defs.diag_dict[self.diag]['id'][i], p1=[r1, z1], w1=w1, p2orig=[r2, z2],
                                        p2=[p2new[i, 0], p2new[i, 1]], w2orig=w2, w2=w2_elong, l12=chord_L_elong, theta=theta,
-                                       spec_line_dict=self.spec_line_dict,
+                                       los_angle = los_angle, spec_line_dict=self.spec_line_dict,
                                        imp1_atom_num=self.imp1_atom_num, imp2_atom_num=self.imp2_atom_num,
                                        calc_NII_afg_feature=self.calc_NII_afg_feature))
 
@@ -2087,7 +2017,7 @@ class SynthDiag:
         fig, ax1 = plt.subplots(ncols=3, sharex=True, sharey=True)
         ax1[0].set_xlim(1.8, 4.0)
         ax1[0].set_ylim(-2.0, 2.0)
-        fig.suptitle(self.spec)
+        fig.suptitle(self.diag)
         ax1[0].set_title(r'$\mathrm{T_{e}}$')
         ax1[1].set_title(r'$\mathrm{n_{e}}$')
         ax1[2].set_title(r'$\mathrm{n_{0}}$')
@@ -2164,7 +2094,7 @@ class SynthDiag:
             if chord.shply_intersects_w_sep:
                 ax1[0].plot(chord.shply_intersects_w_sep.coords.xy[0][0],chord.shply_intersects_w_sep.coords.xy[1][0], 'rx', ms=8, mew=3.0, zorder=10)
 
-        if self.diag == 'KT3A':
+        if self.diag == 'KT3':
             # PLOT PLASMA PROPERTIES ALONG LOS
             fig2, ax2 = plt.subplots(nrows=4, sharex=True)
             ax2[0].set_xlim(0,6)
@@ -2228,55 +2158,4 @@ class Cell:
         self.los_ortho_delL = None
 
 if __name__=='__main__':
-
-    # EXAMPLE
-
-    # compare to 90423
-    tranfile = '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may1117/seq#2/tran'
-
-    # H_line_dict = {'1215.2':[2,1], '1025.3':[3,1], '6561.9':[3,2],'4860.6':[4,2], '4339.9':[5,2], '4101.2':[6,2], '3969.5':[7,2]}
-
-    spec_line_dict = {
-        '1': # HYDROGEN
-            {'1': {'1215.2': ['2', '1'],
-                   '1025.3': ['3', '1'],
-                   '6561.9': ['3', '2'],
-                   '4860.6': ['4', '2'],
-                   '4339.9': ['5', '2'],
-                   '4101.2': ['6', '2'],
-                   '3969.5': ['7', '2'],},
-             },
-        '7': # NITROGEN
-            {'2':{'4042.07':['4f', '3d'],
-                  '5002.18':['3d', '3p'],
-                  '5005.86':['3d', '3p']},
-             '3':{'4100.51':['3p', '3s']},
-             '4':{'3481.83':['3p', '3s']}
-             }
-    }
-    
-    # Read all necessary ADAS data here and store in dict
-    ADAS_dict = {}
-    Te_rnge = [0.2, 5000]
-    ne_rnge = [1.0e11, 1.0e15]
-    ADAS_samples = 10
-    ADAS_dict['adf15'] = adas_adf15_read.get_adas_imp_PECs_interp(spec_line_dict, Te_rnge, ne_rnge,
-                                                                        npts=ADAS_samples, npts_interp=1000)
-    # Also get adf11 for the ionisation balance fractional abundance. No Te_arr, ne_arr interpolation
-    # available in the adf11 reader at the moment, so generate more coarse array (sloppy!)
-    # TODO: add interpolation capability to the adf11 reader so that adf15 and adf11 are on the same Te, ne grid
-    Te_arr_adf11 = np.logspace(np.log10(Te_rnge[0]), np.log10(Te_rnge[1]), 500)
-    ne_arr_adf11 = np.logspace(np.log10(ne_rnge[0]), np.log10(ne_rnge[1]), 30)
-    ADAS_dict['adf11'] = {}
-    for atnum in spec_line_dict:
-        if int(atnum) > 1:
-            ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_imp_adf11(int(atnum), Te_arr_adf11, ne_arr_adf11)
-        elif int(atnum) == 1:
-            ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
-                                                                                      npts=ADAS_samples,
-                                                                                      npts_interp=1000, pwr=True)
-
-    res = Pyproc(ADAS_dict, tranfile=tranfile, machine='JET', interactive_plots= True, spec_line_dict=spec_line_dict, calc_synth_spec_features=True, diag_list= ['KT3A'])
-
-    plt.show()
-
+    print('')

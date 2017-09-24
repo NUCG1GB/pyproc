@@ -21,39 +21,49 @@ class PyprocPlot():
     """
         Class for retrieving, reducing and plotting pyproc saved data
     """
-    def __init__(self, savedir, plot_dict=None):
-        self.savedir = savedir
+    def __init__(self, work_dir, case, plot_dict=None):
+        self.work_dir = work_dir
+        self.case = case
         self.plot_dict = plot_dict
 
         # Read pickled pyproc object
         try:
-            with open(self.savedir + '/pyproc.2ddata.pkl', 'rb') as f:
+            with open(self.work_dir + self.case + '/pyproc.2ddata.pkl', 'rb') as f:
                 self.__data2d = pickle.load(f)
         except IOError as e:
             raise
 
         # Read processed synth diag saved data
         try:
-            with open(self.savedir + '/pyproc.proc_synth_diag.json', 'r') as f:
+            with open(self.work_dir + self.case +  '/pyproc.proc_synth_diag.json', 'r') as f:
                 self.__res_dict = json.load(f)
         except IOError as e:
             raise
 
         if plot_dict:
-            for key in plot_dict.keys():
+            # First restore (or re-read) the ADAS_dict
+            self.ADAS_dict = PyprocAnalyse.get_ADAS_dict(self.work_dir, plot_dict['spec_line_dict'], restore=True)
+            for key, val in plot_dict.items():
                 if key == 'prof_param_defs':
                     self.plot_profiles()
                 if key == 'prof_Hemiss_defs':
                     self.plot_Hemiss_prof()
+                if key == 'prof_impemiss_defs':
+                    self.plot_impemiss_prof()
                 if key == '2d_defs':
-                    diagLOS = self.plot_dict['2d_defs']['diagLOS']
-                    Rrng = self.plot_dict['2d_defs']['Rrng']
-                    Zrng = self.plot_dict['2d_defs']['Zrng']
-                    for at_num in self.plot_dict['2d_defs']['lines']:
-                        for stage in self.plot_dict['2d_defs']['lines'][at_num]:
-                            for line in self.plot_dict['2d_defs']['lines'][at_num][stage]:
-                                self.plot_2d_spec_line(at_num, stage, line, diagLOS, Rrng=Rrng, Zrng=Zrng)
-
+                    diagLOS = val['diagLOS']
+                    savefig = val['save']
+                    Rrng = val['Rrng']
+                    Zrng = val['Zrng']
+                    self.plot_2d_ff_fb(diagLOS, Rrng=Rrng, Zrng=Zrng)
+                    for at_num in val['lines']:
+                        for stage in val['lines'][at_num]:
+                            for line in val['lines'][at_num][stage]:
+                                self.plot_2d_spec_line(at_num, stage, line, diagLOS, Rrng=Rrng, Zrng=Zrng, savefig=savefig)
+                if key == 'imp_rad_coeff':
+                    self.plot_imp_rad_coeff(val['region'], val['atnum'], val['ion_stages'])
+                if key == 'nii_adas_afg':
+                    self.plot_nii_adas_afg()
 
     @property
     def data2d(self):
@@ -90,6 +100,20 @@ class PyprocPlot():
         diag = self.plot_dict['prof_param_defs']['diag']
         color = self.plot_dict['prof_param_defs']['color']
         zorder = self.plot_dict['prof_param_defs']['zorder']
+        coord = self.plot_dict['prof_param_defs']['coord']
+
+        if coord == 'R':
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:,0]
+        elif coord == 'Z':
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:,1]
+        elif coord == 'angle':
+            x = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'los_angle'])
+        else:
+            # default R coord
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:,0]
 
         ne = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'stark', 'fit', 'ne'])
         Te_hi = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_360_400'])
@@ -98,38 +122,58 @@ class PyprocPlot():
         Sion_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Sion'])
         Srec_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Srec'])
         n0delL = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Ly_alpha_fit', 'n0delL'])
-        p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
 
         # Ne
-        axs[0].plot(p2[:,0], ne, c=color, lw=2, zorder=zorder)
+        axs[0].plot(x, ne, c=color, lw=2, zorder=zorder)
 
         # Te
-        axs[1].plot(p2[:,0], Te_hi, c=color, lw=2, zorder=zorder)
-        axs[1].plot(p2[:,0], Te_lo, c=color, lw=2, zorder=zorder)
-        axs[1].fill_between(p2[:,0], Te_hi, Te_lo, facecolor=color,
+        axs[1].plot(x, Te_hi, c=color, lw=2, zorder=zorder)
+        axs[1].plot(x, Te_lo, c=color, lw=2, zorder=zorder)
+        axs[1].fill_between(x, Te_hi, Te_lo, facecolor=color,
                             edgecolor=color, alpha=0.25, linewidth=0, zorder=zorder)
 
         # Total recombination/ionisation (derived from emission with adf11)
-        axs[2].semilogy(p2[:,0], Srec_adf11, '--', c=color, lw=2, zorder=zorder)
-        axs[2].semilogy(p2[:,0], Sion_adf11, c=color, lw=2, zorder=zorder)
+        axs[2].semilogy(x, Srec_adf11, '--', c=color, lw=2, zorder=zorder)
+        axs[2].semilogy(x, Sion_adf11, c=color, lw=2, zorder=zorder)
         axs[2].plot(0, 0, c='k', linewidth=2, label='Ionization')
         axs[2].plot(0, 0, '--', c='k', linewidth=2, label='Recombination')
 
         # N0
-        axs[3].semilogy(p2[:,0], n0delL, c=color, lw=2, zorder=zorder)
+        axs[3].semilogy(x, n0delL, c=color, lw=2, zorder=zorder)
 
         # plot ne, Te profiles at max ne along LOS
         if self.plot_dict['prof_param_defs']['include_pars_at_max_ne_along_LOS']:
-            ne_max = self.get_param_at_max_ne_along_los(diag, 'ne')
-            Te_max = self.get_param_at_max_ne_along_los(diag, 'te')
-            axs[0].plot(p2[:, 0], ne_max, '-', c='darkgray', lw=2, zorder=1)
-            axs[1].plot(p2[:, 0], Te_max, '-', c='darkgray', lw=2, zorder=1)
+            ne_max, te_max = self.get_param_at_max_ne_along_los(diag, 'te')
+            ne_max, n0_max = self.get_param_at_max_ne_along_los(diag, 'n0')
+            axs[0].plot(x, ne_max, '-', c='darkgray', lw=2, zorder=1)
+            axs[1].plot(x, te_max, '-', c='darkgray', lw=2, zorder=1)
+            axs[3].plot(x, n0_max, '-', c='darkgray', lw=2, zorder=1)
 
         if self.plot_dict['prof_param_defs']['include_sum_Sion_Srec']:
-            Sion = self.get_line_int_sorted_data_by_chord_id(diag, ['los_1d', 'Sion', 'val'])
-            Srec = self.get_line_int_sorted_data_by_chord_id(diag, ['los_1d', 'Srec ', 'val'])
-            axs[2].plot(p2[:, 0], Sion, '-', c='darkgray', lw=2, zorder=1)
-            axs[2].plot(p2[:, 0], Srec, '--', c='darkgray', lw=2, zorder=1)
+            Sion = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Sion', 'val'])
+            Srec = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Srec', 'val'])
+            axs[2].plot(x, Sion, '-', c='darkgray', lw=2, zorder=1)
+            axs[2].plot(x, -1.0*Srec, '--', c='darkgray', lw=2, zorder=1)
+        
+        if self.plot_dict['prof_param_defs']['include_target_vals']:
+            axs[0].plot(self.data2d.denel_OT['xdata'][:self.data2d.denel_OT['npts']]+self.data2d.osp[0],
+                        self.data2d.denel_OT['ydata'][:self.data2d.denel_OT['npts']], 'o', mfc='None',
+                        mec='darkgray', mew=2.0, ms=8)
+            axs[1].plot(self.data2d.teve_OT['xdata'][:self.data2d.teve_OT['npts']]+self.data2d.osp[0],
+                        self.data2d.teve_OT['ydata'][:self.data2d.teve_OT['npts']], 'o', mfc='None',
+                        mec='darkgray', mew=2.0, ms=8)
+            # axs[1].plot(self.data2d.teve_IT['xdata'][:self.data2d.teve_IT['npts']]+self.data2d.isp[0],
+            #             self.data2d.teve_IT['ydata'][:self.data2d.teve_IT['npts']], 'o', mfc='None',
+            #             mec='darkgray', mew=2.0, ms=8)
+            # Ion flux to outer target
+            axs[2].plot(self.data2d.pflxd_OT['xdata'][:self.data2d.pflxd_OT['npts']]+self.data2d.osp[0],
+                        -1.0*self.data2d.pflxd_OT['ydata'][:self.data2d.pflxd_OT['npts']], 'o', mfc='None',
+                        mec='darkgray', mew=2.0, ms=8)
+            # neutral density
+            axs[3].plot(self.data2d.da_OT['xdata'][:self.data2d.da_OT['npts']] + self.data2d.osp[0],
+                        self.data2d.da_OT['ydata'][:self.data2d.da_OT['npts']], 'o', mfc='None',
+                        mec='darkgray', mew=2.0, ms=8)
+
 
         # legend
         # axes_dict['main'][0].plot([0, 0], [0, 0], c=sim_c, lw=2, label='simulation')
@@ -150,6 +194,8 @@ class PyprocPlot():
         axs[2].set_ylabel(r'$\mathrm{(s^{-1})}$')
         axs[2].set_ylabel(r'$\mathrm{(s^{-1})}$')
 
+        axs[3].set_xlim(x[0], x[-1])
+
         # axes_dict['main'][3].set_ylabel(r'$\mathrm{n_{H}\/(m^{-3})}$')
 
     def plot_Hemiss_prof(self):
@@ -160,16 +206,156 @@ class PyprocPlot():
         diag = self.plot_dict['prof_Hemiss_defs']['diag']
         color = self.plot_dict['prof_Hemiss_defs']['color']
         zorder = self.plot_dict['prof_Hemiss_defs']['zorder']
-        p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+        excrec = self.plot_dict['prof_Hemiss_defs']['excrec']
+        coord = self.plot_dict['prof_Hemiss_defs']['coord']
+
+        if coord == 'R':
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:, 0]
+        elif coord == 'Z':
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:, 1]
+        elif coord == 'angle':
+            x = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'los_angle'])
+        else:
+            # default R coord
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:, 0]
 
         for i, line in enumerate(lines.keys()):
             excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', line, 'excit'])
             recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', line, 'recom'])
-            axs[i].plot(p2[:,0], excit+recom, '-', lw=2, c=color[i], zorder=zorder, label=line)
-            axs[i].plot(p2[:,0], excit, '--', lw=1, c=color[i], zorder=zorder, label=line+' excit')
-            axs[i].plot(p2[:,0], recom, ':', lw=1, c=color[i], zorder=zorder, label=line+' recom')
+            label = '{:5.1f}'.format(float(line)/10.) + ' nm'
+            axs[i].plot(x, excit+recom, '-', lw=2, c=color, zorder=zorder, label=label)
+            if excrec:
+                axs[i].plot(x, excit, '--', lw=1, c=color, zorder=zorder, label=label+' excit')
+                axs[i].plot(x, recom, ':', lw=1, c=color, zorder=zorder, label=label+' recom')
 
             axs[i].legend(loc='upper right')
+
+
+
+    def plot_nii_adas_afg(self):
+
+        # PLOT RADIAL PROFILES OF SYNTHETIC LINE-INTEGRATED RECOVERED PARAMS
+        axs = self.plot_dict['nii_adas_afg']['axs']
+        color = self.plot_dict['nii_adas_afg']['color']
+        zorder = self.plot_dict['nii_adas_afg']['zorder']
+
+        for diagname, diag in self.__res_dict.items():
+            if diagname == 'KT3':
+                p2 = self.get_line_int_sorted_data_by_chord_id(diagname, ['chord', 'p2'])
+                R = p2[:, 0]
+
+                wav = np.asarray(diag['1']['los_int']['afg_adasn1_kt3b1200']['wave'])
+                nii_adas_afg_intensity = self.get_line_int_sorted_data_by_chord_id(
+                    diagname, ['los_int', 'afg_adasn1_kt3b1200', 'intensity'])
+                axs.semilogy(wav, nii_adas_afg_intensity[0], '-', lw=2.)
+
+                # Also write the results to file for Stuart to process
+                filename = self.work_dir + self.case + '/kt3_nii_adas_afg' '.wav'
+                np.savetxt(filename, wav.T, newline='\n')
+                filename = self.work_dir + self.case + '/kt3_nii_adas_afg' + '.coord'
+                np.savetxt(filename, R, newline='\n')
+                filename = self.work_dir + self.case + '/kt3_nii_adas_afg' + '.data'
+                header = 'units: ph s^-1 m^-2 sr^-1 nm^-1'
+                np.savetxt(filename, nii_adas_afg_intensity.T, header=header, delimiter=',', newline='\n')
+
+            axs.legend(loc='upper right')
+
+    def plot_impemiss_prof(self):
+
+        # PLOT RADIAL PROFILES OF SYNTHETIC LINE-INTEGRATED RECOVERED PARAMS
+        lines = self.plot_dict['prof_impemiss_defs']['lines']
+        axs = self.plot_dict['prof_impemiss_defs']['axs']
+        diag = self.plot_dict['prof_impemiss_defs']['diag']
+        color = self.plot_dict['prof_impemiss_defs']['color']
+        zorder = self.plot_dict['prof_impemiss_defs']['zorder']
+        excrec = self.plot_dict['prof_impemiss_defs']['excrec']
+        coord = self.plot_dict['prof_impemiss_defs']['coord']
+
+        if coord == 'R':
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:, 0]
+        elif coord == 'Z':
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:, 1]
+        elif coord == 'angle':
+            x = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'los_angle'])
+        else:
+            # default R coord
+            p2 = self.get_line_int_sorted_data_by_chord_id(diag, ['chord', 'p2'])
+            x = p2[:, 0]
+
+        icol = 0
+        for at_num in lines.keys():
+            if int(at_num) > 1 : # skip hydrogen
+                for i, ion_stage in enumerate(lines[at_num].keys()):
+                    for line in lines[at_num][ion_stage]:
+                        excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'excit'])
+                        recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'recom'])
+                        line_wv = float(line) / 10.
+                        label = pyprocprocess.at_sym[int(at_num) - 1] + ' ' + \
+                                pyprocprocess.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
+                            line_wv) + ' nm'
+                        axs[i].plot(x, excit+recom, '-', lw=2, c=color[icol], zorder=zorder, label=label)
+                        if excrec:
+                            axs[i].plot(x, excit, '--', lw=1, c=color[icol], zorder=zorder, label=label +' excit')
+                            axs[i].plot(x, recom, ':', lw=1, c=color[icol], zorder=zorder, label=label +' recom')
+
+                        axs[i].legend(loc='upper right')
+                icol += 1
+
+    def plot_imp_rad_coeff(self, region, atnum, ion_stages):
+
+        axs = self.plot_dict['imp_rad_coeff']['axs']
+        color = self.plot_dict['imp_rad_coeff']['color']
+        zorder = self.plot_dict['imp_rad_coeff']['zorder']
+
+        if self.data2d.imp1_atom_num or self.data2d.imp2_atom_num:
+            if atnum == self.data2d.imp1_atom_num or atnum == self.data2d.imp2_atom_num:
+                atnumstr = str(atnum)
+                # rad loss coeff not very sensitive to elec. density so choose a sensible value
+                ine, vne = find_nearest(self.ADAS_dict['adf11'][atnumstr].ne_arr, 1.0e14)
+
+                # plot ionisation balance radiative loss coeff
+                axs[0].loglog(self.ADAS_dict['adf11'][atnumstr].Te_arr,
+                              1.0e-06 * self.ADAS_dict['adf11'][atnumstr].ion_bal_pwr['total'][ine, :], '-k',
+                              lw=3.0)
+                for i, stage in enumerate(ion_stages):
+                    axs[0].loglog(self.ADAS_dict['adf11'][atnumstr].Te_arr,
+                                  1.0e-06 * self.ADAS_dict['adf11'][atnumstr].ion_bal_pwr['ion'][ine, :, stage-1],
+                                  ':', c='k', lw=1.0)
+                    axs[i + 1].loglog(self.ADAS_dict['adf11'][atnumstr].Te_arr,
+                                      1.0e-06 * self.ADAS_dict['adf11'][atnumstr].ion_bal_pwr['ion'][ine, :, stage-1],
+                                      '-', c='k', lw=2.0)
+
+                # plot sim rad loss coeff/pwr for each stage
+                imp_radpwr_coeff_collate = []
+                te_collate = []
+                for cell in self.data2d.regions[region].cells:
+                    if atnum == self.data2d.imp1_atom_num:
+                        imp_radpwr_coeff_collate.append(cell.imp1_radpwr_coeff)
+                    elif atnum == self.data2d.imp2_atom_num:
+                        imp_radpwr_coeff_collate.append(cell.imp2_radpwr_coeff)
+                        
+                    te_collate.append(cell.te)
+
+                imp_radpwr_coeff_collate_arr = np.asarray(imp_radpwr_coeff_collate)
+                te_collate_arr = np.asarray(te_collate)
+
+                axs[0].loglog(te_collate_arr, np.sum(imp_radpwr_coeff_collate_arr, axis=1), '.', c=color, ms=4,
+                                   mew=1.0)
+                for i, stage in enumerate(ion_stages):
+                    axs[i + 1].loglog(te_collate_arr, imp_radpwr_coeff_collate_arr[:, i], '.', c=color, ms=4,
+                                           mew=1.0)
+                    axs[i + 1].set_ylabel(r'$\mathrm{P_{rad}\/+}$' + str(stage-1) + r'$\mathrm{\/(W m^{3})}$')
+
+                    if i == len(ion_stages):
+                        axs[i + 1].set_xlabel('Te (eV)')
+
+                axs[0].set_title(pyprocprocess.at_sym[atnum-1] + ' in region: ' +  region)
+
 
     def get_line_int_sorted_data_by_chord_id(self, diag, mapList):
         """
@@ -213,6 +399,7 @@ class PyprocPlot():
             else:
                 spec_line.append(cell.H_emiss[line_key]['excit'] +
                                 cell.H_emiss[line_key]['recom'])
+
             # imp_line.append((cell.imp_emiss[at_num][ion_stage][line_key]['fPEC_excit']+cell.imp_emiss[at_num][ion_stage][line_key]['fPEC_recom'])*cell.ne)
 
         # coll1 = PatchCollection(cell_patches, cmap=matplotlib.cm.hot, norm=matplotlib.colors.LogNorm(), zorder=1, lw=0)
@@ -256,45 +443,115 @@ class PyprocPlot():
         ax.add_patch(self.__data2d.wall_poly)
 
         if savefig:
+            plt.savefig(self.work_dir + self.case + '/' + title + '.png', dpi=plt.gcf().dpi)
+
+
+    def plot_2d_ff_fb(self, diagLOS, Rrng=None, Zrng=None, savefig=False):
+
+        fig, ax = plt.subplots(ncols=1, figsize=(10, 8))
+        fig.patch.set_facecolor('white')
+        if Rrng and Zrng:
+            ax.set_xlim(Rrng[0], Rrng[1])
+            ax.set_ylim(Zrng[0], Zrng[1])
+        else:
+            ax.set_xlim(1.8, 4.0)
+            ax.set_ylim(-2.0, 2.0)
+
+        cell_patches = []
+        ff_fb_emiss = []
+        for cell in self.__data2d.cells:
+            cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
+            ff_fb_emiss.append(cell.ff_fb_emiss['ff_fb'])
+
+        coll1 = PatchCollection(cell_patches, zorder=1)
+        colors = plt.cm.hot(ff_fb_emiss / np.max(ff_fb_emiss))
+
+        coll1.set_color(colors)
+        collplt = ax.add_collection(coll1)
+        ax.set_yscale
+        title = 'Bremss. (ff+fb) 400.96 nm'
+        ax.set_title(title)
+        plt.gca().set_aspect('equal', adjustable='box')
+
+        # ADD COLORBAR
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        divider = make_axes_locatable(ax)
+        cbar_ax = divider.append_axes('right', size='7%', pad=0.1)
+
+        # Very ugly workaround to scale the colorbar without clobbering the patch collection plot
+        # (https://medium.com/data-science-canvas/way-to-show-colorbar-without-calling-imshow-or-scatter)
+        sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=0, vmax=np.max(ff_fb_emiss)))
+        sm._A = []
+
+        cbar = fig.colorbar(sm, cax=cbar_ax)
+        label = '$\mathrm{ph\/s^{-1}\/m^{-3}\/sr^{-1}}$'
+        cbar.set_label(label)
+
+        # ADD DIAG LOS
+        if diagLOS:
+            for diag in diagLOS:
+                self.__data2d.synth_diag[diag].plot_LOS(ax, color='w', lw=1.0)
+
+        # PLOT SEPARATRIX AND WALL
+        ax.add_patch(self.__data2d.sep_poly)
+        ax.add_patch(self.__data2d.wall_poly)
+
+        if savefig:
             plt.savefig(title + '.png', dpi=plt.gcf().dpi)
 
 
     def get_param_at_max_ne_along_los(self, diag, paramstr, nAvgNeighbs=2):
 
-        ne = self.get_line_int_sorted_data_by_chord_id(self, diag, ['los_1d', 'ne'])
+        ne = self.get_line_int_sorted_data_by_chord_id(diag, ['los_1d', 'ne'])
+        par = self.get_line_int_sorted_data_by_chord_id(diag, ['los_1d', paramstr])
 
-        for i, chord in range(len(ne)):
-        ne_los_1d_max_idx, val = find_nearest(self.__res_dict[diag][chord_key]['los_1d']['ne'],
-                                              np.max(self.__res_dict[diag][chord_key]['los_1d']['ne']))
-        # Find parameter value at position corresponding to max ne along LOS (include nearest neighbours and average)
-        if (ne_los_1d_max_idx + 1) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
-            ne_los_1d_max.append(
-                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx - 1],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+        ne_max = []
+        par_at_ne_max = []
 
-        elif (ne_los_1d_max_idx + 2) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
-            ne_los_1d_max.append(
-                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+        for i in range(len(ne)):
+            if ne[i]:
+                ne_los = np.asarray(ne[i])
+                par_los = np.asarray(par[i])
 
-        elif (ne_los_1d_max_idx + 3) == len(res_dict[diag_key][chord_key]['los_1d']['n0']):
-            ne_los_1d_max.append(
-                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 2],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+                ne_max_idx, val = find_nearest(ne_los, np.max(ne_los))
 
-        else:
-            ne_los_1d_max.append(
-                np.average(np.array((res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 3],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 2],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx + 1],
-                                     res_dict[diag_key][chord_key]['los_1d']['ne'][ne_los_1d_max_idx]))))
+                # ne_max.append(ne_los[ne_max_idx])
+                # par_at_ne_max.append(par_los[ne_max_idx])
 
+                # Find parameter value at position corresponding to max ne along LOS (include nearest neighbours and average)
+                if (ne_max_idx + 1) == len(ne_los):
+                    ne_max.append(np.average(np.array((ne_los[ne_max_idx - 1], ne_los[ne_max_idx]))))
+                    par_at_ne_max.append(np.average(np.array((par_los[ne_max_idx - 1], par_los[ne_max_idx]))))
+                elif (ne_max_idx + 2) == len(ne_los):
+                    ne_max.append(np.average(np.array((ne_los[ne_max_idx - 1], ne_los[ne_max_idx],
+                                                    ne_los[ne_max_idx + 1]))))
+                    par_at_ne_max.append(np.average(np.array((par_los[ne_max_idx - 1], par_los[ne_max_idx],
+                                                    par_los[ne_max_idx + 1]))))
+                else:
+                    ne_max.append(np.average(np.array((ne_los[ne_max_idx + 2], ne_los[ne_max_idx],
+                                                    ne_los[ne_max_idx + 1]))))
+                    par_at_ne_max.append(np.average(np.array((par_los[ne_max_idx + 2], par_los[ne_max_idx],
+                                                    par_los[ne_max_idx + 1]))))
+            else:
+                ne_max.append(0)
+                par_at_ne_max.append(0)
 
-        return sorted_parvals
+        return np.asarray(ne_max), np.asarray(par_at_ne_max)
 
 
 if __name__=='__main__':
+
+    """
+    JET region names:
+        hfs_sol
+        lfs_sol
+        hfs_div
+        lfs_div
+        xpt_conreg
+        hfs_lower
+        lfs_lower
+        rhon_09_10
+    """
 
     #Example
 
@@ -311,8 +568,19 @@ if __name__=='__main__':
     fig2, ax2 = plt.subplots(nrows=3, ncols=1, figsize=(6,12), sharex=True)
     plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
 
+    fig3, ax3 = plt.subplots(nrows=3, ncols=1, figsize=(6,12), sharex=True)
+    plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
+
+    fig4, ax4 = plt.subplots(nrows=5, ncols=1, figsize=(6,12), sharex=True, sharey=True)
+    plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
+
+    fig5, ax5 = plt.subplots(nrows=1, ncols=1, figsize=(12,12), sharex=True, sharey=True)
+    plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
+
     workdir = '/work/bloman/pyproc/'
-    save_dir = workdir + 'cstavrou_cmg_catalog_edge2d_jet_81472_may2717_seq#2'
+    # case = 'bloman_cmg_catalog_edge2d_jet_81472_sep2317_seq#1'
+    case = 'bviola_cmg_catalog_edge2d_jet_81472_may1116_seq#3'
+
     Hlines_dict = OrderedDict([
         ('1215.2', ['2', '1']),
         ('6561.9', ['3', '2']),
@@ -322,41 +590,59 @@ if __name__=='__main__':
     nitrogen_lines_dict = OrderedDict([
         ('2', {'5002.18':['3d', '3p']}),
         ('3', {'4100.51':['3p', '3s']}),
-        ('4', {'3481.83':['3p', '3s']}),
+        ('4', {'3481.83':['3p', '3s']})
     ])
 
-    spec_line_dict = {
-        '1': # HYDROGEN
-            {'1': Hlines_dict},
-        '7': nitrogen_lines_dict
-    }
+    beryllium_lines_dict = OrderedDict([
+        ('2', {'5272.32':['4s', '3p']})
+    ])
+
+    spec_line_dict = OrderedDict([
+        ('1', {'1': Hlines_dict}),
+        ('4', beryllium_lines_dict),
+        ('7', nitrogen_lines_dict)
+    ])
 
     plot_dict = {
-        'prof_param_defs':{'diag': 'KT3A', 'axs': ax1,
-                           'include_pars_at_max_ne_along_LOS': False
-                           'include_sum_Sion_Srec': False,
-                           'include_target_vals': False,
-                           'include_target_vals': False,
+        'spec_line_dict':spec_line_dict,
+        'prof_param_defs':{'diag': 'KT3', 'axs': ax1,
+                           'include_pars_at_max_ne_along_LOS': True,
+                           'include_sum_Sion_Srec': True,
+                           'include_target_vals': True,
+                           'coord': 'R', # 'angle' 'R' 'Z'
                            'color': 'blue', 'zorder': 10},
-        'prof_Hemiss_defs':{'diag': 'KT3A',
-                            'lines': Hlines_dict,
+        'prof_Hemiss_defs':{'diag': 'KT3',
+                            'lines': spec_line_dict['1']['1'],
+                            'excrec': True,
                             'axs': ax2,
-                            'color': ['b', 'r', 'g', 'y', 'm', 'pink', 'orange'],
+                            'coord': 'R', # 'angle' 'R' 'Z'
+                            'color': 'b',
                             'zorder': 10},
-        'prof_impemiss_defs':{'diag': 'KT3A',
+        'prof_impemiss_defs':{'diag': 'KT3',
                               'lines': spec_line_dict,
-                              'axs': ax2,
-                              'color': [],
+                              'excrec': False,
+                              'coord': 'R', # 'angle' 'R' 'Z'
+                              'axs': ax3,
+                              'color': ['r', 'g'],
                               'zorder': 10},
-        # 'los_param_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
-        # 'los_Hemiss_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
-        # 'los_impemiss_defs':{'diag':'KT3A', 'axs':ax1, 'color':'blue', 'zorder':10},
-        '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3A'], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29]}
+        'imp_rad_coeff': {'region': 'vessel',
+                          'atnum': 7,
+                          'ion_stages': [1, 2, 3, 4],
+                          'axs': ax4,
+                          'color': 'r',
+                          'zorder': 10},
+        'nii_adas_afg': { 'axs': ax5,
+                          'color': 'r',
+                          'zorder': 10},
+        # 'los_param_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
+        # 'los_Hemiss_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
+        # 'los_impemiss_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
+        # '2d_defs': {'lines': spec_line_dict, 'diagLOS': [], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29], 'save': False}
     }
 
-    o = PyprocPlot(save_dir, plot_dict=plot_dict)
+    o = PyprocPlot(workdir, case, plot_dict=plot_dict)
 
     # Print out results dictionary tree
-    PyprocPlot.pprint_json(o.res_dict['KT3A']['1']['los_int'])
+    PyprocPlot.pprint_json(o.res_dict['KT3']['1']['los_int'])
 
     plt.show()
