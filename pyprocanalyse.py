@@ -18,7 +18,14 @@ class PyprocAnalyse(PyprocProcess):
         self.input_dict = input_dict
 
         tmpstr = input_dict['tranfile'].replace('/','_')
-        tmpstr = tmpstr[3:-5]
+
+        if tmpstr[:3] == '_u_':
+            tmpstr = tmpstr[3:-5]
+        elif tmpstr[:6] == '_work_':
+            tmpstr = tmpstr[6:-5]
+        else:
+            tmpstr = tmpstr[1:-5]
+
         savedir = input_dict['save_dir'] + tmpstr + '/'
 
         # Create dir from tran file, if it does not exist
@@ -369,14 +376,15 @@ if __name__=='__main__':
                    '3969.5': ['7', '2'],},
              },
         '4':  # BERYLLIUM
-            {'2':{'5272.32':['4s', '3p']}},
+            {'2':{'5272.32': ['4s', '3p']}},
 
         '7': # NITROGEN
-            {'2':{'4042.07':['4f', '3d'],
-                  '5002.18':['3d', '3p'],
-                  '5005.86':['3d', '3p']},
-             '3':{'4100.51':['3p', '3s']},
-             '4':{'3481.83':['3p', '3s']}
+            {'2':{'3996.13': ['4f', '3d'],
+                  '4042.07': ['4f', '3d'],
+                  '5002.18': ['3d', '3p'],
+                  '5005.86': ['3d', '3p']},
+             '3':{'4100.51': ['3p', '3s']},
+             '4':{'3481.83': ['3p', '3s']}
              }
     }
 
@@ -384,10 +392,10 @@ if __name__=='__main__':
         'machine': 'JET',
         'pulse': 90000,
         # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may1117/seq#1/tran',
-        # 'tranfile':'/u/bloman/cmg/catalog/edge2d/jet/81472/sep1717/seq#1/tran',
-        # 'tranfile': '/common/cmg/bloman/edge2d/runs/runcstavrou_jun0617_seq1_AMful_Dperp_01/tran',
-        # 'tranfile': '/u/bloman/cmg/catalog/edge2d/jet/81472/sep2317/seq#1/tran',
-        'tranfile': '/u/bviola/cmg/catalog/edge2d/jet/81472/may2316/seq#6/tran',
+        # 'tranfile':'/work/jsimpson/cmg/catalog/edge2d/jet/85274/aug0717/seq#2/tran',
+        # 'tranfile': '/common/cmg/bloman/edge2d/runs/runbloman_sep2917_seq1_adf11custom/tran',
+        'tranfile': '/work/bloman/cmg/catalog/edge2d/jet/81472/sep2917/seq#1/tran',
+        # 'tranfile': '/u/bviola/cmg/catalog/edge2d/jet/81472/may1316/seq#2/tran',
         'read_ADAS': False,
         'diag_list': ['KT3', 'KT1V', 'KB5V', 'KB5H'],
         'spec_line_dict': spec_line_dict,
@@ -396,7 +404,7 @@ if __name__=='__main__':
         'run_options': {
             'calc_synth_spec_features': True,
             'analyse_synth_spec_features': True,
-            'calc_NII_afg_feature': True}
+            'calc_NII_afg_feature': False}
     }
 
     PyprocAnalyse(input_dict)

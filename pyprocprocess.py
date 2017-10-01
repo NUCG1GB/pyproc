@@ -907,7 +907,7 @@ class PyprocProcess:
                         plt_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].plt[iTe,ine,ion_stage]*(1.0e-06*cell.imp1_den[ion_stage])*(1.0e-06*cell.ne)
                         prb_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].prb[iTe,ine,ion_stage]*(1.0e-06*cell.imp1_den[ion_stage+1])*(1.0e-06*cell.ne)
                         prc_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].prc[iTe,ine,ion_stage]*(1.0e-06*cell.imp1_den[ion_stage+1])*(1.0e-06*cell.n0)
-                        cell_vol = cell.poly.area * 2.0 * np.pi * cell.R # m^-3
+                        cell_vol = cell.poly.area * 2.0 * np.pi * cell.R # m^3
                         plt_contr = plt_contr * 1.e06 * cell_vol # Watts
                         prb_contr = prb_contr * 1.e06 * cell_vol # Watts
                         prc_contr = prc_contr * 1.e06 * cell_vol # Watts
@@ -968,7 +968,7 @@ class PyprocProcess:
         # generate los centerline shapely object
         los.shply_cenline = LineString([(los.p1),(los.p2)])
         if los.los_poly.intersects(self.shply_sep_poly_below_xpt):
-            los.shply_intersects_w_sep = los.shply_cenline.intersection(self.shply_sep_poly_below_xpt)
+            los.shply_intersects_w_sep = None#los.shply_cenline.intersection(self.shply_sep_poly_below_xpt)
 
     def ion_balance_OT(self):
         # RING-WISE IONISATION VS TARGET FLUX COMPARISON
@@ -1304,10 +1304,12 @@ class PyprocProcess:
         else:
             print(line_key, ' not found in post-processed impurity emisison.')
 
-    def plot_imp_rad_loss(self, ax1_5by2, ax2_4by1, barspace=0.2, color='b'):
+    def plot_imp_rad_loss(self, ax1_5by2, ax2_4by1, region_name='lfs_div', barspace=0.2, color='b'):
+
 
         # Set up elec. temp bins and labels
-        te_bins = [0.5, 2.0, 5.0, 10., 20., 50., 100., 500., 1000.]
+        # te_bins = [0.5, 2.0, 5.0, 10., 20., 50., 100., 500., 1000., 1500., 2000., 2500., 3000., 3500., 4000.]
+        te_bins = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000., 1200., 1400., 1600., 1800., 3500., 4000.]
         te_bin_labels = []
         for ite, vte in enumerate(te_bins):
             if (ite+1) != len(te_bins):
@@ -1321,45 +1323,47 @@ class PyprocProcess:
             if e2d_imp_idx == 0: # impurity 1
 
                 # BIN RADIATE POWER BY MACRO REGION, TE, CHARGE STATE
-                div_bin_imp1 = np.zeros((e2d_at_num))
-                div_bin_lfs_imp1 = np.zeros((e2d_at_num))
-                main_bin_imp1 = np.zeros((e2d_at_num))
-                for cell in self.cells:
-                    if cell.Z <= -1.2:
-                        div_bin_imp1+=cell.imp1_radpwr
-                    if cell.Z >= -1.2:
-                        main_bin_imp1+=cell.imp1_radpwr
-                    # LFS-DIV
-                    if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
-                        div_bin_lfs_imp1+=cell.imp1_radpwr
-                # conerty to MW
-                div_bin_imp1*=1.0e-06
-                main_bin_imp1*=1.0e-06
-                div_bin_lfs_imp1*=1.0e-06
+                # div_bin_imp1 = np.zeros((e2d_at_num))
+                # div_bin_lfs_imp1 = np.zeros((e2d_at_num))
+                # main_bin_imp1 = np.zeros((e2d_at_num))
+                # for cell in self.cells:
+                #     if cell.Z <= -1.2:
+                #         div_bin_imp1+=cell.imp1_radpwr
+                #     if cell.Z >= -1.2:
+                #         main_bin_imp1+=cell.imp1_radpwr
+                #     # LFS-DIV
+                #     if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
+                #         div_bin_lfs_imp1+=cell.imp1_radpwr
+                # # conerty to MW
+                # div_bin_imp1*=1.0e-06
+                # main_bin_imp1*=1.0e-06
+                # div_bin_lfs_imp1*=1.0e-06
 
 
                 
                 # BIN RADIATE POWER BY MACRO REGION AND TE
                 div_bin_imp2 = np.zeros((e2d_at_num))
-                main_bin_imp2 = np.zeros((e2d_at_num))
-                div_bin_lfs_imp2 = np.zeros((e2d_at_num))
+                # main_bin_imp2 = np.zeros((e2d_at_num))
+                # div_bin_lfs_imp2 = np.zeros((e2d_at_num))
                 te_bin_imp2_radpwr = np.zeros((len(te_bins)-1))
-                for cell in self.cells:
-                    for ite, vte in enumerate(te_bins):
-                        if (ite+1) != len(te_bins):
-                            if cell.te > te_bins[ite] and cell.te <= te_bins[ite+1]:
-                                te_bin_imp2_radpwr[ite]+=np.sum(cell.imp2_radpwr)
-                    if cell.Z <= -1.2:
-                        div_bin_imp2+=cell.imp2_radpwr
-                    if cell.Z >= -1.2:
-                        main_bin_imp2+=cell.imp2_radpwr
+                for name, region in self.regions.items():
+                    if name == region_name:
+                        for cell in region.cells:
+                            for ite, vte in enumerate(te_bins):
+                                if (ite+1) != len(te_bins):
+                                    if cell.te > te_bins[ite] and cell.te <= te_bins[ite+1]:
+                                        te_bin_imp2_radpwr[ite]+=np.sum(cell.imp2_radpwr)
+                    # if cell.Z <= -1.2:
+                    #     div_bin_imp2+=cell.imp2_radpwr
+                    # if cell.Z >= -1.2:
+                    #     main_bin_imp2+=cell.imp2_radpwr
                     # LFS-DIV
-                    if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
-                        div_bin_lfs_imp2+=cell.imp2_radpwr
+                    # if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
+                    #     div_bin_lfs_imp2+=cell.imp2_radpwr
                 # conerty to MW
                 div_bin_imp2*=1.0e-06
-                main_bin_imp2*=1.0e-06
-                div_bin_lfs_imp2*=1.0e-06
+                # main_bin_imp2*=1.0e-06
+                # div_bin_lfs_imp2*=1.0e-06
                 te_bin_imp2_radpwr*=1.0e-06
 
         # ALSO BIN H RAD POWER TO CONTRAST AGAINST IMPURITY RAD POWER
@@ -1382,37 +1386,38 @@ class PyprocProcess:
 
         # IMP2 CHARGE STATE DIST
         # ax2_4by1[0].plot(div_bin_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
-        ax2_4by1[0].plot(div_bin_lfs_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
-        ax2_4by1[1].plot(main_bin_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
-        ax2_4by1[0].set_ylim(0,0.1)
-        ax2_4by1[1].set_ylim(0,0.2)
-        ax2_4by1[0].set_ylabel(r'$\mathrm{P_{RAD,N}\/(MW)}$')
-        ax2_4by1[0].set_xlabel('Ionisation stage')
-        ax2_4by1[0].set_ylabel(r'$\mathrm{P_{RAD,N}\/(MW)}$')
-        ax2_4by1[1].set_xlabel('Ionisation stage')
+        # ax2_4by1[0].plot(div_bin_lfs_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
+        # ax2_4by1[1].plot(main_bin_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
+        # ax2_4by1[0].set_ylim(0,0.1)
+        # ax2_4by1[1].set_ylim(0,0.2)
+        # ax2_4by1[0].set_ylabel(r'$\mathrm{P_{RAD,N}\/(MW)}$')
+        # ax2_4by1[0].set_xlabel('Ionisation stage')
+        # ax2_4by1[0].set_ylabel(r'$\mathrm{P_{RAD,N}\/(MW)}$')
+        # ax2_4by1[1].set_xlabel('Ionisation stage')
         # BAR PLOT
         xlabel = ('Divertor', 'Main')
         x_pos = np.arange(len(xlabel))
-        width=0.2
+        width=0.1
         # BAR PLOT BY MACRO REGION
         H_bar = np.array((div_bin_H, main_bin_H))
-        imp1_bar = np.array((np.sum(div_bin_imp1), np.sum(main_bin_imp1)))
-        imp2_bar = np.array((np.sum(div_bin_imp2), np.sum(main_bin_imp2)))
-        ax2_4by1[2].bar(x_pos+barspace, H_bar, width, align='center', color='darkgrey')
+        # imp1_bar = np.array((np.sum(div_bin_imp1), np.sum(main_bin_imp1)))
+        # imp2_bar = np.array((np.sum(div_bin_imp2), np.sum(main_bin_imp2)))
+        # ax2_4by1[2].bar(x_pos+barspace, H_bar, width, align='center', color='darkgrey')
         # ax2_4by1[2].bar(x_pos, imp1_bar, width, bottom=H_bar, align='center', color='blue')
-        ax2_4by1[2].bar(x_pos+barspace, imp2_bar, width, bottom=H_bar, align='center', color=color)
-        ax2_4by1[2].set_xticks(x_pos+2*width)
-        ax2_4by1[2].set_xticklabels(xlabel)
-        ax2_4by1[2].set_ylim(0,1.3)
-        ax2_4by1[2].set_ylabel('(MW)')
+        # ax2_4by1[2].bar(x_pos+barspace, imp2_bar, width, bottom=H_bar, align='center', color=color)
+        # ax2_4by1[2].set_xticks(x_pos+2*width)
+        # ax2_4by1[2].set_xticklabels(xlabel)
+        # ax2_4by1[2].set_ylim(0,1.3)
+        # ax2_4by1[2].set_ylabel('(MW)')
 
         # BAR PLOT BY TE BINS
         x_pos = np.arange(len(te_bin_labels))
         # ax2_4by1[3].bar(x_pos, te_bin_H_radpwr/ (np.sum(te_bin_H_radpwr)+np.sum(te_bin_imp2_radpwr)), width, align='center', color='darkgrey')
         ax2_4by1[3].bar(x_pos+barspace, te_bin_imp2_radpwr/np.sum(te_bin_imp2_radpwr), width, align='center', color=color)
-        ax2_4by1[3].set_xticks(x_pos+2*width)
+        # ax2_4by1[3].bar(x_pos+barspace, te_bin_imp2_radpwr, width, align='center', color=color)
+        # ax2_4by1[3].set_xticks(x_pos+2*width)
         ax2_4by1[3].set_xticklabels(te_bin_labels, rotation=90)
-        ax2_4by1[3].set_ylim(0,0.45)
+        # ax2_4by1[3].set_ylim(0,0.45)
         ax2_4by1[3].set_xlabel('T_e (eV)')
         ax2_4by1[3].set_ylabel('N power frac.')
 

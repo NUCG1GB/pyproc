@@ -158,21 +158,21 @@ class PyprocPlot():
         if self.plot_dict['prof_param_defs']['include_target_vals']:
             axs[0].plot(self.data2d.denel_OT['xdata'][:self.data2d.denel_OT['npts']]+self.data2d.osp[0],
                         self.data2d.denel_OT['ydata'][:self.data2d.denel_OT['npts']], 'o', mfc='None',
-                        mec='darkgray', mew=2.0, ms=8)
+                        mec=color, mew=2.0, ms=8)
             axs[1].plot(self.data2d.teve_OT['xdata'][:self.data2d.teve_OT['npts']]+self.data2d.osp[0],
                         self.data2d.teve_OT['ydata'][:self.data2d.teve_OT['npts']], 'o', mfc='None',
-                        mec='darkgray', mew=2.0, ms=8)
+                        mec=color, mew=2.0, ms=8)
             # axs[1].plot(self.data2d.teve_IT['xdata'][:self.data2d.teve_IT['npts']]+self.data2d.isp[0],
             #             self.data2d.teve_IT['ydata'][:self.data2d.teve_IT['npts']], 'o', mfc='None',
             #             mec='darkgray', mew=2.0, ms=8)
             # Ion flux to outer target
             axs[2].plot(self.data2d.pflxd_OT['xdata'][:self.data2d.pflxd_OT['npts']]+self.data2d.osp[0],
                         -1.0*self.data2d.pflxd_OT['ydata'][:self.data2d.pflxd_OT['npts']], 'o', mfc='None',
-                        mec='darkgray', mew=2.0, ms=8)
+                        mec=color, mew=2.0, ms=8)
             # neutral density
             axs[3].plot(self.data2d.da_OT['xdata'][:self.data2d.da_OT['npts']] + self.data2d.osp[0],
                         self.data2d.da_OT['ydata'][:self.data2d.da_OT['npts']], 'o', mfc='None',
-                        mec='darkgray', mew=2.0, ms=8)
+                        mec=color, mew=2.0, ms=8)
 
 
         # legend
@@ -231,7 +231,8 @@ class PyprocPlot():
                 axs[i].plot(x, excit, '--', lw=1, c=color, zorder=zorder, label=label+' excit')
                 axs[i].plot(x, recom, ':', lw=1, c=color, zorder=zorder, label=label+' recom')
 
-            axs[i].legend(loc='upper right')
+            leg = axs[i].legend(loc='upper right')
+            leg.get_frame().set_alpha(0.2)
 
 
 
@@ -261,7 +262,8 @@ class PyprocPlot():
                 header = 'units: ph s^-1 m^-2 sr^-1 nm^-1'
                 np.savetxt(filename, nii_adas_afg_intensity.T, header=header, delimiter=',', newline='\n')
 
-            axs.legend(loc='upper right')
+            leg = axs.legend(loc='upper right')
+            leg.get_frame().set_alpha(0.2)
 
     def plot_impemiss_prof(self):
 
@@ -303,7 +305,8 @@ class PyprocPlot():
                             axs[i].plot(x, excit, '--', lw=1, c=color[icol], zorder=zorder, label=label +' excit')
                             axs[i].plot(x, recom, ':', lw=1, c=color[icol], zorder=zorder, label=label +' recom')
 
-                        axs[i].legend(loc='upper right')
+                        leg = axs[i].legend(loc='upper right')
+                        leg.get_frame().set_alpha(0.2)
                 icol += 1
 
     def plot_imp_rad_coeff(self, region, atnum, ion_stages):
@@ -332,29 +335,37 @@ class PyprocPlot():
 
                 # plot sim rad loss coeff/pwr for each stage
                 imp_radpwr_coeff_collate = []
+                imp_radpwr_collate = []
                 te_collate = []
                 for cell in self.data2d.regions[region].cells:
                     if atnum == self.data2d.imp1_atom_num:
                         imp_radpwr_coeff_collate.append(cell.imp1_radpwr_coeff)
+                        imp_radpwr_collate.append(cell.imp1_radpwr)
                     elif atnum == self.data2d.imp2_atom_num:
                         imp_radpwr_coeff_collate.append(cell.imp2_radpwr_coeff)
-                        
+                        imp_radpwr_collate.append(cell.imp2_radpwr)
+
                     te_collate.append(cell.te)
 
                 imp_radpwr_coeff_collate_arr = np.asarray(imp_radpwr_coeff_collate)
+                imp_radpwr_collate_arr = np.sum(np.asarray(imp_radpwr_collate), axis=1)
+                imp_radpwr_collate_arr_max = np.max(imp_radpwr_collate_arr)
+                imp_radpwr_collate_arr/= imp_radpwr_collate_arr_max
                 te_collate_arr = np.asarray(te_collate)
 
-                axs[0].loglog(te_collate_arr, np.sum(imp_radpwr_coeff_collate_arr, axis=1), '.', c=color, ms=4,
-                                   mew=1.0)
+                axs[0].scatter(te_collate_arr, np.sum(imp_radpwr_coeff_collate_arr, axis=1),
+                               s=500*imp_radpwr_collate_arr, c=color, edgecolors='none')
                 for i, stage in enumerate(ion_stages):
-                    axs[i + 1].loglog(te_collate_arr, imp_radpwr_coeff_collate_arr[:, i], '.', c=color, ms=4,
-                                           mew=1.0)
+                    scale = np.asarray(imp_radpwr_collate)[:, i]
+                    scale/=imp_radpwr_collate_arr_max
+                    axs[i + 1].scatter(te_collate_arr, imp_radpwr_coeff_collate_arr[:, i],
+                                       s=500*scale, c=color,  edgecolors='none')
                     axs[i + 1].set_ylabel(r'$\mathrm{P_{rad}\/+}$' + str(stage-1) + r'$\mathrm{\/(W m^{3})}$')
 
                     if i == len(ion_stages):
                         axs[i + 1].set_xlabel('Te (eV)')
 
-                axs[0].set_title(pyprocprocess.at_sym[atnum-1] + ' in region: ' +  region)
+                axs[0].set_title(self.case + ' ' + pyprocprocess.at_sym[atnum-1] + ' in region: ' +  region)
 
 
     def get_line_int_sorted_data_by_chord_id(self, diag, mapList):
@@ -413,8 +424,7 @@ class PyprocPlot():
         # collplt.set_array(np.array(colors[:,0]))
         ax.set_yscale
         line_wv = float(line_key) / 10.
-        pyprocprocess.at_sym[int(at_num) - 1]
-        title = pyprocprocess.at_sym[int(at_num) - 1] + ' ' + pyprocprocess.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
+        title = self.case + ' ' + pyprocprocess.at_sym[int(at_num) - 1] + ' ' + pyprocprocess.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
             line_wv) + ' nm'
         ax.set_title(title)
         plt.gca().set_aspect('equal', adjustable='box')
@@ -469,7 +479,7 @@ class PyprocPlot():
         coll1.set_color(colors)
         collplt = ax.add_collection(coll1)
         ax.set_yscale
-        title = 'Bremss. (ff+fb) 400.96 nm'
+        title = self.case + ' Bremss. (ff+fb) 400.96 nm'
         ax.set_title(title)
         plt.gca().set_aspect('equal', adjustable='box')
 
@@ -579,7 +589,7 @@ if __name__=='__main__':
 
     workdir = '/work/bloman/pyproc/'
     # case = 'bloman_cmg_catalog_edge2d_jet_81472_sep2317_seq#1'
-    case = 'bviola_cmg_catalog_edge2d_jet_81472_may1116_seq#3'
+    case = 'bviola_cmg_catalog_edge2d_jet_81472_may1316_seq#2'
 
     Hlines_dict = OrderedDict([
         ('1215.2', ['2', '1']),
