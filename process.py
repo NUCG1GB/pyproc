@@ -82,12 +82,15 @@ class PyprocProcess:
     """
         Class to read and store EDGE2D-EIRENE results
     """
-    def __init__(self, ADAS_dict, tranfile='', machine='JET', pulse=90531, interactive_plots = False,
-                 spec_line_dict=None, diag_list=None, calc_synth_spec_features=None,
+    def __init__(self, ADAS_dict, ADAS_dict_lytrap=None, tranfile='', machine='JET', pulse=90531, interactive_plots = False,
+                 spec_line_dict=None, spec_line_dict_lytrap = None, diag_list=None, calc_synth_spec_features=None,
                  calc_NII_afg_feature=False, save_synth_diag=False,
                  synth_diag_save_file=None, data2d_save_file=None):
 
         self.ADAS_dict = ADAS_dict
+        self.ADAS_dict_lytrap = ADAS_dict_lytrap
+        self.spec_line_dict = spec_line_dict
+        self.spec_line_dict_lytrap = spec_line_dict_lytrap
         self.tranfile = tranfile
         self.machine = machine
         self.pulse = pulse
@@ -111,7 +114,6 @@ class PyprocProcess:
         self.patches = None
         self.cells = None
         self.H_adf11 = None
-        self.spec_line_dict = spec_line_dict
 
         self.sep_poly = None
         self.shply_sep_poly = None
@@ -171,6 +173,7 @@ class PyprocProcess:
         elif self.machine == 'DIID':
             self.defs = get_DIIIDdefs()
 
+        # TODO: Add opacity calcs
         self.calc_H_emiss()
         self.calc_H_rad_power()
 
@@ -194,6 +197,7 @@ class PyprocProcess:
 
 
         # CALULCATE PRAD IN DEFINED MACRO REGIONS
+        # TODO: Add opacity calcs
         if self.regions:
             self.calc_regions_rad_power()
 
@@ -205,6 +209,7 @@ class PyprocProcess:
                 if key in self.defs.diag_dict.keys():
                     self.synth_diag[key] = SynthDiag(self.defs, diag=key,
                                                      spec_line_dict = self.spec_line_dict,
+                                                     spec_line_dict_lytrap=self.spec_line_dict_lytrap,
                                                      imp1_atom_num=self.imp1_atom_num, imp2_atom_num=self.imp2_atom_num,
                                                      calc_NII_afg_feature=self.calc_NII_afg_feature)
                     for chord in self.synth_diag[key].chords:
@@ -798,6 +803,14 @@ class PyprocProcess:
                 E_excit, E_recom= adas_adf15_read.get_H_line_emiss(line_key, self.ADAS_dict['adf15']['1']['1'], cell.te, cell.ne*1.0E-06, cell.ni*1.0E-06, cell.n0*1.0E-06)
                 cell.H_emiss[line_key] = {'excit':E_excit, 'recom':E_recom, 'units':'ph.s^-1.m^-3.sr^-1'}
 
+        if self.spec_line_dict_lytrap:
+            print('Calculating H emission for Ly trapping...')
+            for cell in self.cells:
+                for line_key in self.spec_line_dict_lytrap['1']['1']:
+                    E_excit, E_recom= adas_adf15_read.get_H_line_emiss(line_key, self.ADAS_dict_lytrap['adf15']['1']['1'], cell.te, cell.ne*1.0E-06, cell.ni*1.0E-06, cell.n0*1.0E-06)
+                    cell.H_emiss[line_key] = {'excit':E_excit, 'recom':E_recom, 'units':'ph.s^-1.m^-3.sr^-1'}
+
+
     def calc_ff_fb_emiss(self, filter_wv_nm, filter_tran):
         # TODO: ADD ZEFF CAPABILITY
         Te_rnge = [0.2, 5000]
@@ -1304,128 +1317,11 @@ class PyprocProcess:
         else:
             print(line_key, ' not found in post-processed impurity emisison.')
 
-    def plot_imp_rad_loss(self, ax1_5by2, ax2_4by1, region_name='lfs_div', barspace=0.2, color='b'):
-
-
-        # Set up elec. temp bins and labels
-        # te_bins = [0.5, 2.0, 5.0, 10., 20., 50., 100., 500., 1000., 1500., 2000., 2500., 3000., 3500., 4000.]
-        te_bins = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000., 1200., 1400., 1600., 1800., 3500., 4000.]
-        te_bin_labels = []
-        for ite, vte in enumerate(te_bins):
-            if (ite+1) != len(te_bins):
-                label = '{:6.1f}'.format(te_bins[ite]) + '-' + '{:6.1f}'.format(te_bins[ite+1])
-                te_bin_labels.append(label)
-
-        # IMPURITY RADIATED POWER
-        e2d_imps = self.zch['data'][0:2]
-        for e2d_imp_idx, e2d_at_num in enumerate(e2d_imps):
-
-            if e2d_imp_idx == 0: # impurity 1
-
-                # BIN RADIATE POWER BY MACRO REGION, TE, CHARGE STATE
-                # div_bin_imp1 = np.zeros((e2d_at_num))
-                # div_bin_lfs_imp1 = np.zeros((e2d_at_num))
-                # main_bin_imp1 = np.zeros((e2d_at_num))
-                # for cell in self.cells:
-                #     if cell.Z <= -1.2:
-                #         div_bin_imp1+=cell.imp1_radpwr
-                #     if cell.Z >= -1.2:
-                #         main_bin_imp1+=cell.imp1_radpwr
-                #     # LFS-DIV
-                #     if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
-                #         div_bin_lfs_imp1+=cell.imp1_radpwr
-                # # conerty to MW
-                # div_bin_imp1*=1.0e-06
-                # main_bin_imp1*=1.0e-06
-                # div_bin_lfs_imp1*=1.0e-06
-
-
-                
-                # BIN RADIATE POWER BY MACRO REGION AND TE
-                div_bin_imp2 = np.zeros((e2d_at_num))
-                # main_bin_imp2 = np.zeros((e2d_at_num))
-                # div_bin_lfs_imp2 = np.zeros((e2d_at_num))
-                te_bin_imp2_radpwr = np.zeros((len(te_bins)-1))
-                for name, region in self.regions.items():
-                    if name == region_name:
-                        for cell in region.cells:
-                            for ite, vte in enumerate(te_bins):
-                                if (ite+1) != len(te_bins):
-                                    if cell.te > te_bins[ite] and cell.te <= te_bins[ite+1]:
-                                        te_bin_imp2_radpwr[ite]+=np.sum(cell.imp2_radpwr)
-                    # if cell.Z <= -1.2:
-                    #     div_bin_imp2+=cell.imp2_radpwr
-                    # if cell.Z >= -1.2:
-                    #     main_bin_imp2+=cell.imp2_radpwr
-                    # LFS-DIV
-                    # if not self.shply_sep_poly.contains(cell.poly) and cell.Z <= -1.2 and cell.R >= self.geom['rpx']:
-                    #     div_bin_lfs_imp2+=cell.imp2_radpwr
-                # conerty to MW
-                div_bin_imp2*=1.0e-06
-                # main_bin_imp2*=1.0e-06
-                # div_bin_lfs_imp2*=1.0e-06
-                te_bin_imp2_radpwr*=1.0e-06
-
-        # ALSO BIN H RAD POWER TO CONTRAST AGAINST IMPURITY RAD POWER
-        div_bin_H = 0.0
-        main_bin_H = 0.0
-        te_bin_H_radpwr = np.zeros((len(te_bins)-1))
-        for cell in self.cells:
-            for ite, vte in enumerate(te_bins):
-                if (ite+1) != len(te_bins):
-                    if cell.te > te_bins[ite] and cell.te <= te_bins[ite+1]:
-                        te_bin_H_radpwr[ite]+=cell.H_radpwr
-            if cell.Z <= -1.2:
-                div_bin_H+=cell.H_radpwr
-            else:
-                main_bin_H+=cell.H_radpwr
-        # conerty to MW
-        div_bin_H*=1.0e-06
-        main_bin_H*=1.0e-06
-        te_bin_H_radpwr*=1.0e-06
-
-        # IMP2 CHARGE STATE DIST
-        # ax2_4by1[0].plot(div_bin_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
-        # ax2_4by1[0].plot(div_bin_lfs_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
-        # ax2_4by1[1].plot(main_bin_imp2, '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
-        # ax2_4by1[0].set_ylim(0,0.1)
-        # ax2_4by1[1].set_ylim(0,0.2)
-        # ax2_4by1[0].set_ylabel(r'$\mathrm{P_{RAD,N}\/(MW)}$')
-        # ax2_4by1[0].set_xlabel('Ionisation stage')
-        # ax2_4by1[0].set_ylabel(r'$\mathrm{P_{RAD,N}\/(MW)}$')
-        # ax2_4by1[1].set_xlabel('Ionisation stage')
-        # BAR PLOT
-        xlabel = ('Divertor', 'Main')
-        x_pos = np.arange(len(xlabel))
-        width=0.1
-        # BAR PLOT BY MACRO REGION
-        H_bar = np.array((div_bin_H, main_bin_H))
-        # imp1_bar = np.array((np.sum(div_bin_imp1), np.sum(main_bin_imp1)))
-        # imp2_bar = np.array((np.sum(div_bin_imp2), np.sum(main_bin_imp2)))
-        # ax2_4by1[2].bar(x_pos+barspace, H_bar, width, align='center', color='darkgrey')
-        # ax2_4by1[2].bar(x_pos, imp1_bar, width, bottom=H_bar, align='center', color='blue')
-        # ax2_4by1[2].bar(x_pos+barspace, imp2_bar, width, bottom=H_bar, align='center', color=color)
-        # ax2_4by1[2].set_xticks(x_pos+2*width)
-        # ax2_4by1[2].set_xticklabels(xlabel)
-        # ax2_4by1[2].set_ylim(0,1.3)
-        # ax2_4by1[2].set_ylabel('(MW)')
-
-        # BAR PLOT BY TE BINS
-        x_pos = np.arange(len(te_bin_labels))
-        # ax2_4by1[3].bar(x_pos, te_bin_H_radpwr/ (np.sum(te_bin_H_radpwr)+np.sum(te_bin_imp2_radpwr)), width, align='center', color='darkgrey')
-        ax2_4by1[3].bar(x_pos+barspace, te_bin_imp2_radpwr/np.sum(te_bin_imp2_radpwr), width, align='center', color=color)
-        # ax2_4by1[3].bar(x_pos+barspace, te_bin_imp2_radpwr, width, align='center', color=color)
-        # ax2_4by1[3].set_xticks(x_pos+2*width)
-        ax2_4by1[3].set_xticklabels(te_bin_labels, rotation=90)
-        # ax2_4by1[3].set_ylim(0,0.45)
-        ax2_4by1[3].set_xlabel('T_e (eV)')
-        ax2_4by1[3].set_ylabel('N power frac.')
-
-
 class LOS:
 
     def __init__(self, diag, los_poly = None, chord_num=None, p1 = None, w1 = None, p2orig = None, p2 = None,
                  w2orig = None, w2 = None, l12 = None, theta=None, los_angle=None, spec_line_dict=None,
+                 spec_line_dict_lytrap=None,
                  imp1_atom_num=None, imp2_atom_num=None, calc_NII_afg_feature=False):
 
         self.diag = diag
@@ -1445,6 +1341,7 @@ class LOS:
         self.los_angle = los_angle
         self.cells = []
         self.spec_line_dict = spec_line_dict
+        self.spec_line_dict_lytrap = spec_line_dict_lytrap
         self.imp1_atom_num = imp1_atom_num
         self.imp2_atom_num = imp2_atom_num
 
@@ -1505,6 +1402,17 @@ class LOS:
                 sum_excit += (cell.H_emiss[key]['excit'] * cell.los_ortho_delL)
                 sum_recom += (cell.H_emiss[key]['recom'] * cell.los_ortho_delL)
             self.los_int['H_emiss'].update({key:{'excit':sum_excit, 'recom':sum_recom, 'units':'ph.s^-1.m^-2.sr^-1'}})
+
+        # Same for Ly-opacity
+        if self.spec_line_dict_lytrap:
+            for key in self.spec_line_dict_lytrap['1']['1']:
+                sum_excit = 0
+                sum_recom = 0
+                for cell in self.cells:
+                    sum_excit += (cell.H_emiss[key]['excit'] * cell.los_ortho_delL)
+                    sum_recom += (cell.H_emiss[key]['recom'] * cell.los_ortho_delL)
+                self.los_int['H_emiss'].update({key:{'excit':sum_excit, 'recom':sum_recom, 'units':'ph.s^-1.m^-2.sr^-1'}})
+
 
         # SUM IMPURITY EMISSION
         if self.spec_line_dict:
@@ -1961,7 +1869,7 @@ class LOS:
 
 class SynthDiag:
 
-    def __init__(self, defs, diag, pulse=None, spec_line_dict=None, imp1_atom_num=None,
+    def __init__(self, defs, diag, pulse=None, spec_line_dict=None, spec_line_dict_lytrap=None, imp1_atom_num=None,
                  imp2_atom_num=None, calc_NII_afg_feature=False):
 
         self.calc_NII_afg_feature = calc_NII_afg_feature
@@ -1969,6 +1877,7 @@ class SynthDiag:
         self.pulse = pulse
         self.chords = []
         self.spec_line_dict = spec_line_dict
+        self.spec_line_dict_lytrap = spec_line_dict_lytrap
         self.imp1_atom_num = imp1_atom_num
         self.imp2_atom_num = imp2_atom_num
 
@@ -2005,6 +1914,7 @@ class SynthDiag:
                                        chord_num=defs.diag_dict[self.diag]['id'][i], p1=[r1, z1], w1=w1, p2orig=[r2, z2],
                                        p2=[p2new[i, 0], p2new[i, 1]], w2orig=w2, w2=w2_elong, l12=chord_L_elong, theta=theta,
                                        los_angle = los_angle, spec_line_dict=self.spec_line_dict,
+                                       spec_line_dict_lytrap=self.spec_line_dict_lytrap,
                                        imp1_atom_num=self.imp1_atom_num, imp2_atom_num=self.imp2_atom_num,
                                        calc_NII_afg_feature=self.calc_NII_afg_feature))
 

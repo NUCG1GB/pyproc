@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib import patches
 from collections import OrderedDict
-from pyproc import pyprocprocess
-from pyproc.pyprocanalyse import PyprocAnalyse
-from pyproc.pyprocprocess import PyprocProcess
+from pyproc import process
+from pyproc.analyse import PyprocAnalyse
+from pyproc.process import PyprocProcess
 
 def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
@@ -21,10 +21,11 @@ class PyprocPlot():
     """
         Class for retrieving, reducing and plotting pyproc saved data
     """
-    def __init__(self, work_dir, case, plot_dict=None):
+    def __init__(self, work_dir, case, plot_dict=None, icase=1):
         self.work_dir = work_dir
         self.case = case
         self.plot_dict = plot_dict
+        self.icase = icase
 
         # Read pickled pyproc object
         try:
@@ -44,6 +45,10 @@ class PyprocPlot():
             # First restore (or re-read) the ADAS_dict
             self.ADAS_dict = PyprocAnalyse.get_ADAS_dict(self.work_dir, plot_dict['spec_line_dict'], restore=True)
             for key, val in plot_dict.items():
+                if key == 'spec_line_dict_lytrap':
+                    self.ADAS_dict_lytrap = PyprocAnalyse.get_ADAS_dict(self.work_dir,
+                                                                        plot_dict['spec_line_dict_lytrap'],
+                                                                        restore=True, lytrap=True)
                 if key == 'prof_param_defs':
                     self.plot_profiles()
                 if key == 'prof_Hemiss_defs':
@@ -62,6 +67,8 @@ class PyprocPlot():
                                 self.plot_2d_spec_line(at_num, stage, line, diagLOS, Rrng=Rrng, Zrng=Zrng, savefig=savefig)
                 if key == 'imp_rad_coeff':
                     self.plot_imp_rad_coeff(val['region'], val['atnum'], val['ion_stages'])
+                if key == 'imp_rad_dist':
+                    self.plot_imp_rad_dist(val['region'], val['atnum'], val['te_nbins'])
                 if key == 'nii_adas_afg':
                     self.plot_nii_adas_afg()
 
@@ -190,6 +197,7 @@ class PyprocPlot():
 
         axs[3].set_xlabel('Major radius on tile 5 (m)')
         axs[0].set_ylabel(r'$\mathrm{n_{e}\/(m^{-3})}$')
+        axs[3].set_ylabel(r'$\mathrm{n_{H}\/(m^{-3})}$')
         axs[1].set_ylabel(r'$\mathrm{T_{e}\/(eV)}}$')
         axs[2].set_ylabel(r'$\mathrm{(s^{-1})}$')
         axs[2].set_ylabel(r'$\mathrm{(s^{-1})}$')
@@ -202,6 +210,9 @@ class PyprocPlot():
 
         # PLOT RADIAL PROFILES OF SYNTHETIC LINE-INTEGRATED RECOVERED PARAMS
         lines = self.plot_dict['prof_Hemiss_defs']['lines']
+        lines_lytrap = None
+        if 'lines_lytrap' in self.plot_dict['prof_Hemiss_defs']:
+            lines_lytrap = self.plot_dict['prof_Hemiss_defs']['lines_lytrap']
         axs = self.plot_dict['prof_Hemiss_defs']['axs']
         diag = self.plot_dict['prof_Hemiss_defs']['diag']
         color = self.plot_dict['prof_Hemiss_defs']['color']
@@ -231,9 +242,33 @@ class PyprocPlot():
                 axs[i].plot(x, excit, '--', lw=1, c=color, zorder=zorder, label=label+' excit')
                 axs[i].plot(x, recom, ':', lw=1, c=color, zorder=zorder, label=label+' recom')
 
-            leg = axs[i].legend(loc='upper right')
+            leg = axs[i].legend(loc='upper left')
             leg.get_frame().set_alpha(0.2)
+            if i == len(lines.keys())-1:
+                axs[i].set_xlabel(coord)
 
+        # also plot Ly-series with photon trapping
+        if lines_lytrap:
+            if '1215.67'in lines_lytrap:
+                excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', '1215.67', 'excit'])
+                recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', '1215.67', 'recom'])
+                label = '{:5.1f}'.format(float('1215.67') / 10.) + ' nm; ' + 'ad hoc opacity'
+                axs[0].plot(x, excit + recom, '--', lw=2, c=color, zorder=zorder, label=label)
+                if excrec:
+                    axs[0].plot(x, excit, '--', lw=1, c=color, zorder=zorder, label=label + ' excit')
+                    axs[0].plot(x, recom, ':', lw=1, c=color, zorder=zorder, label=label + ' recom')
+                leg = axs[0].legend(loc='upper left')
+                leg.get_frame().set_alpha(0.2)
+            if '6564.57'in lines_lytrap:
+                excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', '6564.57', 'excit'])
+                recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'H_emiss', '6564.57', 'recom'])
+                label = '{:5.1f}'.format(float('6564.57') / 10.) + ' nm; ' + 'ad hoc opacity'
+                axs[1].plot(x, excit + recom, '--', lw=2, c=color, zorder=zorder, label=label)
+                if excrec:
+                    axs[1].plot(x, excit, '--', lw=1, c=color, zorder=zorder, label=label + ' excit')
+                    axs[1].plot(x, recom, ':', lw=1, c=color, zorder=zorder, label=label + ' recom')
+                leg = axs[1].legend(loc='upper left')
+                leg.get_frame().set_alpha(0.2)
 
 
     def plot_nii_adas_afg(self):
@@ -297,8 +332,8 @@ class PyprocPlot():
                         excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'excit'])
                         recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'recom'])
                         line_wv = float(line) / 10.
-                        label = pyprocprocess.at_sym[int(at_num) - 1] + ' ' + \
-                                pyprocprocess.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
+                        label = process.at_sym[int(at_num) - 1] + ' ' + \
+                                process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
                             line_wv) + ' nm'
                         axs[i].plot(x, excit+recom, '-', lw=2, c=color[icol], zorder=zorder, label=label)
                         if excrec:
@@ -365,8 +400,69 @@ class PyprocPlot():
                     if i == len(ion_stages):
                         axs[i + 1].set_xlabel('Te (eV)')
 
-                axs[0].set_title(self.case + ' ' + pyprocprocess.at_sym[atnum-1] + ' in region: ' +  region)
+                axs[0].set_title(self.case + ' ' + process.at_sym[atnum - 1] + ' in region: ' + region)
 
+    def plot_imp_rad_dist(self, region, atnum, te_nbins):
+
+        axs = self.plot_dict['imp_rad_dist']['axs']
+        color = self.plot_dict['imp_rad_dist']['color']
+        zorder = self.plot_dict['imp_rad_dist']['zorder']
+
+        if self.data2d.imp1_atom_num or self.data2d.imp2_atom_num:
+            if atnum == self.data2d.imp1_atom_num or atnum == self.data2d.imp2_atom_num:
+                atnumstr = str(atnum)
+                # rad loss coeff not very sensitive to elec. density so choose a sensible value
+                ine, vne = find_nearest(self.ADAS_dict['adf11'][atnumstr].ne_arr, 1.0e14)
+
+                # Get max and min Te in region for Te bin range
+                min_Te = 100000.
+                max_Te = 0.0
+                for cell in self.data2d.regions[region].cells:
+                    if cell.te > max_Te: max_Te = cell.te
+                    if cell.te < min_Te: min_Te = cell.te
+
+                # Set up elec. temp bins and labels
+                te_bins = np.logspace(np.log10(min_Te), np.log10(max_Te), te_nbins)
+                te_bin_labels = []
+
+                for ite, vte in enumerate(te_bins):
+                    if (ite + 1) != len(te_bins):
+                        label = '{:6.1f}'.format(te_bins[ite]) + '-' + '{:6.1f}'.format(te_bins[ite + 1])
+                        te_bin_labels.append(label)
+
+                        # BIN RADIATED POWER BY TE
+                        te_bin_imp_radpwr = np.zeros((te_nbins-1, atnum))
+                        te_bin_H_radpwr = np.zeros((te_nbins-1))
+                        for cell in self.data2d.regions[region].cells:
+                            for ite, vte in enumerate(te_bins):
+                                if (ite + 1) != len(te_bins):
+                                    if cell.te > te_bins[ite] and cell.te <= te_bins[ite + 1]:
+                                        te_bin_H_radpwr[ite] += cell.H_radpwr
+                                        if atnum == self.data2d.imp1_atom_num:
+                                            te_bin_imp_radpwr[ite] += cell.imp1_radpwr
+                                        elif atnum == self.data2d.imp2_atom_num:
+                                            te_bin_imp_radpwr[ite] += cell.imp2_radpwr
+                        # convert to MW
+                        te_bin_imp_radpwr *= 1.0e-06
+                        te_bin_H_radpwr *= 1.0e-06
+
+                # IMP CHARGE STATE DIST
+                axs[0].plot(np.sum(te_bin_imp_radpwr, axis=0), '-o', c=color, mfc=color, mec=color, ms=4, mew=2.0)
+                axs[0].set_ylabel(r'$\mathrm{P_{RAD}\/(MW)}$')
+                axs[0].set_xlabel('Ionisation stage')
+
+                # BAR PLOT BY TE BINS
+                x_pos = np.arange(len(te_bin_labels))
+                width = 0.2
+                barspace = width * self.icase
+                axs[1].bar(x_pos+barspace, te_bin_H_radpwr, width, align='center', color='darkgrey', edgecolor=color, alpha=0.3)
+                axs[1].bar(x_pos+barspace, np.sum(te_bin_imp_radpwr, axis=1) , width, align='center', color=color, alpha=0.3)
+                axs[1].set_xticks(x_pos+width*(self.icase-1))
+                axs[1].set_xticklabels(te_bin_labels, rotation=90)
+                axs[1].set_xlabel(r'$\mathrm{T_{e}\/(eV)}$')
+                axs[1].set_ylabel(r'$\mathrm{P_{RAD}\/(MW)}$')
+
+                axs[0].set_title(self.case + ' ' + process.at_sym[atnum - 1] + ' in region: ' + region)
 
     def get_line_int_sorted_data_by_chord_id(self, diag, mapList):
         """
@@ -424,7 +520,7 @@ class PyprocPlot():
         # collplt.set_array(np.array(colors[:,0]))
         ax.set_yscale
         line_wv = float(line_key) / 10.
-        title = self.case + ' ' + pyprocprocess.at_sym[int(at_num) - 1] + ' ' + pyprocprocess.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
+        title = self.case + ' ' + process.at_sym[int(at_num) - 1] + ' ' + process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
             line_wv) + ' nm'
         ax.set_title(title)
         plt.gca().set_aspect('equal', adjustable='box')
@@ -641,9 +737,9 @@ if __name__=='__main__':
                           'axs': ax4,
                           'color': 'r',
                           'zorder': 10},
-        'nii_adas_afg': { 'axs': ax5,
-                          'color': 'r',
-                          'zorder': 10},
+        # 'nii_adas_afg': { 'axs': ax5,
+        #                   'color': 'r',
+        #                   'zorder': 10},
         # 'los_param_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
         # 'los_Hemiss_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
         # 'los_impemiss_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},

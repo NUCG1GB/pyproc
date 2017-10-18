@@ -247,46 +247,46 @@ def get_JETdefs(plot_defs = False, pulse_ref = 90531):
 
     if plot_defs:
         plt.gca().add_patch(wall_poly)
-        for i, los in enumerate(JET.diag_dict['KT3A']['id']):
-            plt.plot([JET.diag_dict['KT3A']['p1'][i,0], JET.diag_dict['KT3A']['p2'][i, 0]],
-                     [JET.diag_dict['KT3A']['p1'][i,1], JET.diag_dict['KT3A']['p2'][i, 1]],
-                     '-k')
-            plt.text(2.5,2, 'KT3A', color='black')
-        for i, los in enumerate(JET.diag_dict['KT1V']['id']):
-            plt.plot([JET.diag_dict['KT1V']['p1'][i,0], JET.diag_dict['KT1V']['p2'][i, 0]],
-                     [JET.diag_dict['KT1V']['p1'][i,1], JET.diag_dict['KT1V']['p2'][i, 1]],
-                     '-r')
-            plt.text(2.5,2+0.2, 'KT1V', color='red')
-            p2_rot = rotate_los(JET.diag_dict['KT1V']['p1'][i],
-                                JET.diag_dict['KT1V']['p2'][i], kt1v_los_half_angle[i])
-            plt.plot([JET.diag_dict['KT1V']['p1'][i,0], p2_rot[0]],
-                     [JET.diag_dict['KT1V']['p1'][i,1], p2_rot[1]], ':r')
-            p2_rot2 = rotate_los(JET.diag_dict['KT1V']['p1'][i],
-                                 JET.diag_dict['KT1V']['p2'][i], -1.0*kt1v_los_half_angle[i])
-            plt.plot([JET.diag_dict['KT1V']['p1'][i,0], p2_rot2[0]],
-                     [JET.diag_dict['KT1V']['p1'][i,1], p2_rot2[1]], ':r')
+        #for i, los in enumerate(JET.diag_dict['KT3']['id']):
+            #plt.plot([JET.diag_dict['KT3']['p1'][i,0], JET.diag_dict['KT3']['p2'][i, 0]],
+                     #[JET.diag_dict['KT3']['p1'][i,1], JET.diag_dict['KT3']['p2'][i, 1]],
+                     #'-k')
+            #plt.text(1.7,1.7, 'KT3A', color='black')
+        #for i, los in enumerate(JET.diag_dict['KT1V']['id']):
+            #plt.plot([JET.diag_dict['KT1V']['p1'][i,0], JET.diag_dict['KT1V']['p2'][i, 0]],
+                     #[JET.diag_dict['KT1V']['p1'][i,1], JET.diag_dict['KT1V']['p2'][i, 1]],
+                     #'-r')
+            #plt.text(1.7,1.7+0.2, 'KT1V', color='red')
+            #p2_rot = rotate_los(JET.diag_dict['KT1V']['p1'][i],
+                                #JET.diag_dict['KT1V']['p2'][i], kt1v_los_half_angle[i])
+            #plt.plot([JET.diag_dict['KT1V']['p1'][i,0], p2_rot[0]],
+                     #[JET.diag_dict['KT1V']['p1'][i,1], p2_rot[1]], ':r')
+            #p2_rot2 = rotate_los(JET.diag_dict['KT1V']['p1'][i],
+                                 #JET.diag_dict['KT1V']['p2'][i], -1.0*kt1v_los_half_angle[i])
+            #plt.plot([JET.diag_dict['KT1V']['p1'][i,0], p2_rot2[0]],
+                     #[JET.diag_dict['KT1V']['p1'][i,1], p2_rot2[1]], ':r')
 
         for i, los in enumerate(JET.diag_dict['KB5V']['id']):
             if i+1 >= 1 and i+1 <=24:
                 plt.plot([JET.diag_dict['KB5V']['p1'][i, 0], JET.diag_dict['KB5V']['p2'][i, 0]],
                          [JET.diag_dict['KB5V']['p1'][i, 1], JET.diag_dict['KB5V']['p2'][i, 1]],
-                         '-r')
-                plt.text(2.5, 2 + 0.4, 'KB5V', color='red')
+                         '-m')
+                plt.text(1.7, 1.7 + 0.4, 'KB5V', color='m')
                 p2_rot = rotate_los(JET.diag_dict['KB5V']['p1'][i],
                                     JET.diag_dict['KB5V']['p2'][i], kb5v_los_half_angular_extent[i])
-                plt.plot([JET.diag_dict['KB5V']['p1'][i, 0], p2_rot[0]],
-                         [JET.diag_dict['KB5V']['p1'][i, 1], p2_rot[1]], ':r')
+                #plt.plot([JET.diag_dict['KB5V']['p1'][i, 0], p2_rot[0]],
+                #         [JET.diag_dict['KB5V']['p1'][i, 1], p2_rot[1]], ':m')
 
         for i, los in enumerate(JET.diag_dict['KB5H']['id']):
             if i+1 >= 1 and i+1 <=24:
                 plt.plot([JET.diag_dict['KB5H']['p1'][i, 0], JET.diag_dict['KB5H']['p2'][i, 0]],
                          [JET.diag_dict['KB5H']['p1'][i, 1], JET.diag_dict['KB5H']['p2'][i, 1]],
-                         '-r')
-                plt.text(2.5, 2 + 0.4, 'KB5H', color='red')
+                         '-g')
+                plt.text(1.7, 1.7 + 0.6, 'KB5H', color='g')
                 p2_rot = rotate_los(JET.diag_dict['KB5H']['p1'][i],
                                     JET.diag_dict['KB5H']['p2'][i], kb5h_los_half_angular_extent[i])
-                plt.plot([JET.diag_dict['KB5H']['p1'][i, 0], p2_rot[0]],
-                         [JET.diag_dict['KB5H']['p1'][i, 1], p2_rot[1]], ':r')
+                #plt.plot([JET.diag_dict['KB5H']['p1'][i, 0], p2_rot[0]],
+                #         [JET.diag_dict['KB5H']['p1'][i, 1], p2_rot[1]], ':g')
 
         plt.axes().set_aspect('equal')
         plt.show()
@@ -306,6 +306,6 @@ def get_DIIIDdefs():
 
 if __name__=='__main__':
 
-    JET = get_JETdefs(plot_defs = True, pulse_ref = 85000)
+    JET = get_JETdefs(plot_defs = True, pulse_ref = 90000)
 
     print('')

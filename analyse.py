@@ -5,10 +5,13 @@ import numpy as np
 # import scipy.io as io
 import os, errno
 import json, pickle
-from pyproc.pyprocprocess import PyprocProcess
+from pyproc.process import PyprocProcess
 from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 # http://lmfit.github.io/lmfit-py/parameters.html
 from lmfit import minimize, Parameters, report_fit
+import os
+import sys
+import contextlib
 
 class PyprocAnalyse(PyprocProcess):
     """
@@ -40,14 +43,30 @@ class PyprocAnalyse(PyprocProcess):
         self.proc_synth_diag_save_file = savedir+ 'pyproc.proc_synth_diag.json'
         self.spec_line_dict = input_dict['spec_line_dict']
 
-        self.ADAS_dict = self.get_ADAS_dict(input_dict['save_dir'],
-                                            self.spec_line_dict, restore=not input_dict['read_ADAS'])
+        # Location of adf15 and adf11 ADAS data modified for Ly-series opacity with escape factor method
+        if 'read_ADAS_lytrap' in input_dict:
+            self.adas_lytrap = input_dict['read_ADAS_lytrap']
+            self.spec_line_dict_lytrap = self.adas_lytrap['spec_line_dict']
+            self.ADAS_dict_lytrap = self.get_ADAS_dict(input_dict['save_dir'],
+                                                        self.spec_line_dict_lytrap,
+                                                        restore=not input_dict['read_ADAS_lytrap']['read'],
+                                                        adf11_year = self.adas_lytrap['adf11_year'],
+                                                        lytrap_adf11_dir=self.adas_lytrap['adf11_dir'],
+                                                        lytrap_pec_file=self.adas_lytrap['pec_file'])
+        else:
+            self.ADAS_dict_lytrap = None
+            self.spec_line_dict_lytrap = None
 
-        super().__init__(self.ADAS_dict, tranfile=input_dict['tranfile'],
+        # Also get standard ADAS data
+        self.ADAS_dict = self.get_ADAS_dict(input_dict['save_dir'],
+                                                self.spec_line_dict, adf11_year=12, restore=not input_dict['read_ADAS'])
+
+        super().__init__(self.ADAS_dict, ADAS_dict_lytrap = self.ADAS_dict_lytrap, tranfile=input_dict['tranfile'],
                          machine=input_dict['machine'],
                          pulse=input_dict['pulse'],
                          interactive_plots = input_dict['interactive_plots'],
                          spec_line_dict=self.spec_line_dict,
+                         spec_line_dict_lytrap = self.spec_line_dict_lytrap,
                          diag_list=input_dict['diag_list'],
                          calc_synth_spec_features=input_dict['run_options']['calc_synth_spec_features'],
                          calc_NII_afg_feature=input_dict['run_options']['calc_NII_afg_feature'],
@@ -128,16 +147,53 @@ class PyprocAnalyse(PyprocProcess):
         return (model_ff_fb - data) / eps_data
 
     @staticmethod
-    def get_ADAS_dict(save_dir, spec_line_dict, num_samples=100, restore=False):
+    @contextlib.contextmanager
+    def stdchannel_redirected(stdchannel, dest_filename):
+        """
+        https://stackoverflow.com/questions/977840/redirecting-fortran-called-via-f2py-output-in-python
+
+        A context manager to temporarily redirect stdout or stderr
+
+        e.g.:
+
+
+        with stdchannel_redirected(sys.stderr, os.devnull):
+            if compiler.has_function('clock_gettime', libraries=['rt']):
+                libraries.append('rt')
+        """
+
+        try:
+            oldstdchannel = os.dup(stdchannel.fileno())
+            dest_file = open(dest_filename, 'w')
+            os.dup2(dest_file.fileno(), stdchannel.fileno())
+
+            yield
+        finally:
+            if oldstdchannel is not None:
+                os.dup2(oldstdchannel, stdchannel.fileno())
+            if dest_file is not None:
+                dest_file.close()
+
+    @staticmethod
+    def get_ADAS_dict(save_dir, spec_line_dict, num_samples=100, restore=False, lytrap=False,
+                      adf11_year = 12, lytrap_adf11_dir=False, lytrap_pec_file=False):
 
         if restore:
             # Try to restore ADAS_dict
-            try:
-                with open(save_dir + 'ADAS_dict.pkl', 'rb') as f:
-                    ADAS_dict = pickle.load(f)
-            except IOError as e:
-                print('ADAS dictionary not found. Set [read_ADAS] to True.')
-                raise
+            if lytrap:
+                try:
+                    with open(save_dir + 'ADAS_dict_lytrap.pkl', 'rb') as f:
+                        ADAS_dict = pickle.load(f)
+                except IOError as e:
+                    print('ADAS dictionary not found. Set [read_ADAS_lytrap] to True.')
+                    raise
+            else:
+                try:
+                    with open(save_dir + 'ADAS_dict.pkl', 'rb') as f:
+                        ADAS_dict = pickle.load(f)
+                except IOError as e:
+                    print('ADAS dictionary not found. Set [read_ADAS] to True.')
+                    raise
 
             # Does the restored ADAS_dict contain all of the requested lines?
             for atnum, atnumdict in spec_line_dict.items():
@@ -154,35 +210,46 @@ class PyprocAnalyse(PyprocProcess):
                             print(atnum, ' ', ionstage, ' ', line,
                                   ' not found in restored ADAS_dict. Set [read_ADAS] to True and try again.')
                             return
-            print('ADAS dictionary restored.')
+            if lytrap:
+                print('ADAS Ly trapping dictionary restored.')
+            else:
+                print('ADAS dictionary restored.')
         else:
-            # Read all necessary ADAS data here and store in dict
-            ADAS_dict = {}
-            Te_rnge = [0.2, 5000]
-            ne_rnge = [1.0e11, 1.0e15]
-            num_samples = 100
-            ADAS_dict['adf15'] = adas_adf15_read.get_adas_imp_PECs_interp(spec_line_dict, Te_rnge,
-                                                                          ne_rnge, npts=num_samples,
-                                                                          npts_interp=1000)
-            # Also get adf11 for the ionisation balance fractional abundance. No Te_arr, ne_arr interpolation
-            # available in the adf11 reader at the moment, so generate more coarse array (sloppy!)
-            # TODO: add interpolation capability to the adf11 reader so that adf15 and adf11 are on the same Te, ne grid
-            Te_arr_adf11 = np.logspace(np.log10(Te_rnge[0]), np.log10(Te_rnge[1]), 500)
-            ne_arr_adf11 = np.logspace(np.log10(ne_rnge[0]), np.log10(ne_rnge[1]), 30)
-            ADAS_dict['adf11'] = {}
-            for atnum in spec_line_dict:
-                if int(atnum) > 1:
-                    ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_imp_adf11(int(atnum), Te_arr_adf11,
-                                                                                   ne_arr_adf11)
-                elif int(atnum) == 1:
-                    ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
-                                                                                        npts=num_samples,
-                                                                                        npts_interp=1000,
-                                                                                        pwr=True)
-            # Pickle ADAS dictionary to save_dir
-            output = open(save_dir + 'ADAS_dict.pkl', 'wb')
-            pickle.dump(ADAS_dict, output)
-            output.close()
+            with PyprocAnalyse.stdchannel_redirected(sys.stderr, os.devnull):
+                with PyprocAnalyse.stdchannel_redirected(sys.stdout, os.devnull):
+                    # Read all necessary ADAS data here and store in dict
+                    ADAS_dict = {}
+                    Te_rnge = [0.2, 5000]
+                    ne_rnge = [1.0e11, 1.0e15]
+                    num_samples = 100
+                    ADAS_dict['adf15'] = adas_adf15_read.get_adas_imp_PECs_interp(spec_line_dict, Te_rnge,
+                                                                                  ne_rnge, npts=num_samples,
+                                                                                  npts_interp=1000,
+                                                                                  lytrap_pec_file=lytrap_pec_file)
+                    # Also get adf11 for the ionisation balance fractional abundance. No Te_arr, ne_arr interpolation
+                    # available in the adf11 reader at the moment, so generate more coarse array (sloppy!)
+                    # TODO: add interpolation capability to the adf11 reader so that adf15 and adf11 are on the same Te, ne grid
+                    Te_arr_adf11 = np.logspace(np.log10(Te_rnge[0]), np.log10(Te_rnge[1]), 500)
+                    ne_arr_adf11 = np.logspace(np.log10(ne_rnge[0]), np.log10(ne_rnge[1]), 30)
+                    ADAS_dict['adf11'] = {}
+                    for atnum in spec_line_dict:
+                        if int(atnum) > 1:
+                            ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_imp_adf11(int(atnum), Te_arr_adf11,
+                                                                                           ne_arr_adf11)
+                        elif int(atnum) == 1:
+                            ADAS_dict['adf11'][atnum] = adas_adf11_read.get_adas_H_adf11_interp(Te_rnge, ne_rnge,
+                                                                                                npts=num_samples,
+                                                                                                npts_interp=1000,
+                                                                                                pwr=True,
+                                                                                                year=adf11_year,
+                                                                                                custom_dir=lytrap_adf11_dir)
+                    # Pickle ADAS dictionary to save_dir
+                    if lytrap_adf11_dir:
+                        output = open(save_dir + 'ADAS_dict_lytrap.pkl', 'wb')
+                    else:
+                        output = open(save_dir + 'ADAS_dict.pkl', 'wb')
+                    pickle.dump(ADAS_dict, output)
+                    output.close()
 
         return ADAS_dict
 
@@ -318,10 +385,10 @@ class PyprocAnalyse(PyprocProcess):
                             srec = 1.0E-04 * area_cm2 * h72 * 4. * np.pi * \
                                    self.ADAS_dict['adf11']['1'].acd[idxTe, idxne] / \
                                    self.ADAS_dict['adf15']['1']['1'][H_line_key + 'recom'].pec[idxTe, idxne]
-                        if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == '4' and \
-                                        res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == '2':
-                            h42_excit = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']
-                            sion = 1.0E-04 * area_cm2 * h42_excit * 4. * np.pi * \
+                        if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == '2' and \
+                                        res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == '1':
+                            h21_excit = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']
+                            sion = 1.0E-04 * area_cm2 * h21_excit * 4. * np.pi * \
                                    self.ADAS_dict['adf11']['1'].scd[idxTe, idxne] / \
                                    self.ADAS_dict['adf15']['1']['1'][H_line_key + 'excit'].pec[idxTe, idxne]
 
@@ -359,52 +426,3 @@ class PyprocAnalyse(PyprocProcess):
                             ##### Add fit n0*delL result to dictionary
                             res_dict[diag_key][chord_key]['los_int']['Ly_alpha_fit'] = {'n0delL': n0delL_Lya_tmp,
                                                                              'units': 'm^-2'}
-
-
-if __name__=='__main__':
-
-    spec_line_dict = {
-        # Must include at least one spectral line from each impurity species in EDGE2D
-
-        '1': # HYDROGEN
-            {'1': {'1215.2': ['2', '1'],
-                   '1025.3': ['3', '1'],
-                   '6561.9': ['3', '2'],
-                   '4860.6': ['4', '2'],
-                   '4339.9': ['5', '2'],
-                   '4101.2': ['6', '2'],
-                   '3969.5': ['7', '2'],},
-             },
-        '4':  # BERYLLIUM
-            {'2':{'5272.32': ['4s', '3p']}},
-
-        '7': # NITROGEN
-            {'2':{'3996.13': ['4f', '3d'],
-                  '4042.07': ['4f', '3d'],
-                  '5002.18': ['3d', '3p'],
-                  '5005.86': ['3d', '3p']},
-             '3':{'4100.51': ['3p', '3s']},
-             '4':{'3481.83': ['3p', '3s']}
-             }
-    }
-
-    input_dict = {
-        'machine': 'JET',
-        'pulse': 90000,
-        # 'tranfile': '/u/cstavrou/cmg/catalog/edge2d/jet/81472/may1117/seq#1/tran',
-        # 'tranfile':'/work/jsimpson/cmg/catalog/edge2d/jet/85274/aug0717/seq#2/tran',
-        # 'tranfile': '/common/cmg/bloman/edge2d/runs/runbloman_sep2917_seq1_adf11custom/tran',
-        'tranfile': '/work/bloman/cmg/catalog/edge2d/jet/81472/sep2917/seq#1/tran',
-        # 'tranfile': '/u/bviola/cmg/catalog/edge2d/jet/81472/may1316/seq#2/tran',
-        'read_ADAS': False,
-        'diag_list': ['KT3', 'KT1V', 'KB5V', 'KB5H'],
-        'spec_line_dict': spec_line_dict,
-        'interactive_plots': False,
-        'save_dir': '/work/bloman/pyproc/',
-        'run_options': {
-            'calc_synth_spec_features': True,
-            'analyse_synth_spec_features': True,
-            'calc_NII_afg_feature': False}
-    }
-
-    PyprocAnalyse(input_dict)
