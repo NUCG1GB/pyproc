@@ -687,8 +687,7 @@ if __name__=='__main__':
     plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
 
     workdir = '/work/bloman/pyproc/'
-    # case = 'bloman_cmg_catalog_edge2d_jet_81472_sep2317_seq#1'
-    case = 'bviola_cmg_catalog_edge2d_jet_81472_may1316_seq#2'
+    case = 'bloman_cmg_catalog_edge2d_jet_81472_oct2117_seq#3'
 
     Hlines_dict = OrderedDict([
         ('1215.2', ['2', '1']),
@@ -697,9 +696,14 @@ if __name__=='__main__':
     ])
 
     nitrogen_lines_dict = OrderedDict([
-        ('2', {'5002.18':['3d', '3p']}),
+        ('2', {
+            # '4042.07': ['4f', '3d'],
+            '3996.13': ['4f', '3d']
+            # '5002.18': ['3d', '3p'],
+            # '5005.86': ['3d', '3p']
+        }),
         ('3', {'4100.51':['3p', '3s']}),
-        ('4', {'3481.83':['3p', '3s']})
+        ('4', {'4058.90':['3d', '3p']})
     ])
 
     beryllium_lines_dict = OrderedDict([
@@ -746,7 +750,7 @@ if __name__=='__main__':
         # 'los_param_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
         # 'los_Hemiss_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
         # 'los_impemiss_defs':{'diag':'KT3', 'axs':ax1, 'color':'blue', 'zorder':10},
-        # '2d_defs': {'lines': spec_line_dict, 'diagLOS': [], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29], 'save': False}
+        '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3'], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29], 'save': False}
     }
 
     o = PyprocPlot(workdir, case, plot_dict=plot_dict)

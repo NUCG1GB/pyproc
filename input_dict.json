@@ -8,31 +8,31 @@
     "KB5H"
   ],
   "pulse": 90000,
-  "read_ADAS": false,
-  "read_ADAS_lytrap": {
-    "read": true,
-    "adf11_dir": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity",
-    "spec_line_dict": {
-      "1": {
-        "1": {
-          "1215.67": [
-            "2",
-            "1"
-          ],
-          "1025.72": [
-            "3",
-            "1"
-          ],
-          "6564.57": [
-            "3",
-            "2"
-          ]
-        }
-      }
-    },
-    "pec_file": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity/pec16_h0.dat",
-    "adf11_year": 96
-  },
+  "read_ADAS": true,
+//  "read_ADAS_lytrap": {
+//    "read": false,
+//    "adf11_dir": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity",
+//    "spec_line_dict": {
+//      "1": {
+//        "1": {
+//          "1215.67": [
+//            "2",
+//            "1"
+//          ],
+//          "1025.72": [
+//            "3",
+//            "1"
+//          ],
+//          "6564.57": [
+//            "3",
+//            "2"
+//          ]
+//        }
+//      }
+//    },
+//    "pec_file": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity/pec16_h0.dat",
+//    "adf11_year": 96
+//  },
   "spec_line_dict": {
     "1": {
       "1": {

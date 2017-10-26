@@ -6,7 +6,7 @@ import numpy as np
 import os, errno
 import json, pickle
 from pyproc.process import PyprocProcess
-from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
+from pyproc.pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 # http://lmfit.github.io/lmfit-py/parameters.html
 from lmfit import minimize, Parameters, report_fit
 import os

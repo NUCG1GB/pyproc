@@ -11,7 +11,7 @@ from matplotlib import patches
 from scipy.interpolate import interp1d
 from shapely.geometry import Polygon, LineString
 from pyproc.machine_defs import get_DIIIDdefs, get_JETdefs
-from pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
+from pyproc.pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 
 # font = {'family': 'normal',
 #         'weight': 'normal',
