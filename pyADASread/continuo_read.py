@@ -5,11 +5,10 @@ from scipy.interpolate import interp1d
 from subprocess import Popen, PIPE
 import os
 import scipy.io as io
-from pyConstants import constants
 from adaslib import *
 
-h = constants.phys['h'][0]
-c = constants.phys['c'][0]
+h = 6.626E-34 # 'J.s'
+c = 299792458.0 # 'm/s'
 
 def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
