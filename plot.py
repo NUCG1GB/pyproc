@@ -329,12 +329,15 @@ class PyprocPlot():
             if int(at_num) > 1 : # skip hydrogen
                 for i, ion_stage in enumerate(lines[at_num].keys()):
                     for line in lines[at_num][ion_stage]:
-                        excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'excit'])
-                        recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'recom'])
                         line_wv = float(line) / 10.
+
                         label = process.at_sym[int(at_num) - 1] + ' ' + \
                                 process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
                             line_wv) + ' nm'
+
+                        excit = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'excit'])
+                        recom = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'imp_emiss', at_num, ion_stage, line, 'recom'])
+
                         axs[i].plot(x, excit+recom, '-', lw=2, c=color[icol], zorder=zorder, label=label)
                         if excrec:
                             axs[i].plot(x, excit, '--', lw=1, c=color[icol], zorder=zorder, label=label +' excit')

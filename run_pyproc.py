@@ -2,6 +2,7 @@ from pyproc.analyse import PyprocAnalyse
 import json, os, sys
 import argparse
 from collections import OrderedDict
+
 def run_pyproc(input_dict_str):
 
     # spec_line_dict = {
