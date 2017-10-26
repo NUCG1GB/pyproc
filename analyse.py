@@ -1,17 +1,16 @@
 
-# Import external modules
-
 import numpy as np
 # import scipy.io as io
 import os, errno
 import json, pickle
-from pyproc.process import PyprocProcess
-from pyproc.pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 # http://lmfit.github.io/lmfit-py/parameters.html
 from lmfit import minimize, Parameters, report_fit
 import os
 import sys
 import contextlib
+
+from pyproc.process import PyprocProcess
+from pyproc.pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 
 class PyprocAnalyse(PyprocProcess):
     """

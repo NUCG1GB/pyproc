@@ -1,6 +1,4 @@
 
-# Import external modules
-
 import numpy as np
 import json, pprint, pickle
 import operator
