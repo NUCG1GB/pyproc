@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pickle
 import json
 import idlbridge as idl
@@ -97,6 +98,10 @@ class PyprocProcess:
 
         self.regions = {}
 
+        self.cells = None
+        # cells dataframe for easy filtering by edge2d row/ring
+        self.cells_df = None
+
         #Flags
         self.calc_NII_afg_feature = calc_NII_afg_feature
 
@@ -112,7 +117,6 @@ class PyprocProcess:
         self.zvertp = None
         self.NE2Ddata = None
         self.patches = None
-        self.cells = None
         self.H_adf11 = None
 
         self.sep_poly = None
@@ -170,7 +174,7 @@ class PyprocProcess:
                                     include_confined=True, include_SOL=True, include_PFR=True)
             self.regions['rhon_09_10'] = Region('rhon_09_10', Rmin=0, Rmax=10, Zmin=self.geom['zpx'], Zmax=10,
                                     include_confined=True, include_SOL=False, include_PFR=False)
-        elif self.machine == 'DIID':
+        elif self.machine == 'DIIID':
             self.defs = get_DIIIDdefs()
 
         # TODO: Add opacity calcs
@@ -190,11 +194,6 @@ class PyprocProcess:
 
         if self.spec_line_dict and (self.imp1_atom_num or self.imp2_atom_num):
             self.calc_imp_emiss()
-            # Rrng = [2.36, 2.96]
-            # Zrng = [-1.73, -1.29]
-            # self.plot_imp_lines('7', '2', '5005.86', diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-            # plt.show()
-
 
         # CALULCATE PRAD IN DEFINED MACRO REGIONS
         # TODO: Add opacity calcs
@@ -215,15 +214,6 @@ class PyprocProcess:
                     for chord in self.synth_diag[key].chords:
                         self.los_intersect(chord)
                         chord.orthogonal_polys()
-                    # Rrng = [2.36, 2.96]
-                    # Zrng = [-1.73, -1.29]
-                    # self.plot_imp_lines('7', '2', '5005.86', diag_list=['KT3A'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-                    # plt.show()
-                    # if interactive_plots:
-                    #     self.plot_te_ne_n0()
-                    #     if diag_list:
-                    #         for key in diag_list:
-                    #             self.synth_diag[key].plot_synth_spec_edge2d_data()
                         chord.calc_int_and_1d_los_quantities()
                         if calc_synth_spec_features:
                             print('Calculating synthetic spectra for diag: ', key)
@@ -241,32 +231,7 @@ class PyprocProcess:
 
         # Plotting routines
         if interactive_plots:
-            self.plot_te_ne_n0()
-            if diag_list:
-                for key in diag_list:
-                    self.synth_diag[key].plot_synth_spec_edge2d_data()
-
-            self.plot_H_lines()
-
-            #
-            Rrng = [2.36, 2.96]
-            Zrng = [-1.73, -1.29]
-            self.plot_ff_fb_filtered_emiss(diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-
-            plt.show()
-
-            if self.spec_line_dict and (self.imp1_atom_num or self.imp2_atom_num):
-                fig1, ax1 = plt.subplots(nrows=6, ncols=1, figsize=(12,8), sharex=True)
-                fig2, ax2 = plt.subplots(nrows=4, ncols=1, figsize=(6,12))
-                self.plot_imp_rad_loss(ax1, ax2, color='b')
-
-                Rrng = [2.36, 2.96]
-                Zrng = [-1.73, -1.29]
-                self.plot_imp_lines('7', '4', '3481.83', diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-                self.plot_imp_lines('7', '3', '4100.51', diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-                self.plot_imp_lines('7', '2', '5005.86', diag_list=['KT3'], plot_LOS=True, Rrng=Rrng, Zrng=Zrng, savefig=True)
-
-            plt.show()
+            print('Interactive plots is disabled. Use PyprocPlot instead.')
 
     def __getstate__(self):
         """
@@ -469,21 +434,10 @@ class PyprocProcess:
                 # create Cell object for each polygon containing the relevant field data
                 shply_poly = Polygon(poly.get_xy())
 
-                # SCALE TE NE N0: FOR TESTING ONLY. MUST BE COMMENTED OUT!
-                # te_scal=1.0
-                # ne_scal=1.0
-                # if self.zv[k][0] <= -1.6:
-                #     n0_scal=1000.0
-                # else:
-                #     n0_scal = 1.0
-                te_scal = 1.0
-                ne_scal = 1.0
-                n0_scal = 1.0
-
                 self.cells.append(Cell(self.rmesh['data'][i], self.zmesh['data'][i],
-                                       poly=shply_poly, te=te_scal*self.te[k],
-                                       ne=ne_scal*self.ne[k], ni=ne_scal*self.ni[k],
-                                       n0=n0_scal*self.n0[k], Srec=self.srec[k], Sion=self.sion[k],
+                                       poly=shply_poly, te=self.te[k],
+                                       ne=self.ne[k], ni=self.ni[k],
+                                       n0=self.n0[k], Srec=self.srec[k], Sion=self.sion[k],
                                        imp1_den = self.imp1_den[:,k], imp2_den=self.imp2_den[:,k]))
                 k+=1
 
@@ -1081,241 +1035,6 @@ class PyprocProcess:
         ax.add_patch(self.wall_poly)
         plt.axes().set_aspect('equal')
 
-
-    def plot_te_ne_n0(self):
-        fig, ax = plt.subplots(ncols=3, sharex=True, sharey=True)
-        cmap = plt.get_cmap('jet')
-        coll1 = PatchCollection(self.patches)
-        colors = plt.cm.jet(self.te/(np.max(self.te)/10.))
-        coll1.set_color(colors)
-        coll2 = PatchCollection(self.patches)
-        colors = plt.cm.jet(self.ne/np.max(self.ne))
-        coll2.set_color(colors)
-        coll3 = PatchCollection(self.patches)
-        colors = plt.cm.jet(self.n0/np.max(self.n0))
-        coll3.set_color(colors)
-        ax[0].add_collection(coll1)
-        ax[1].add_collection(coll2)
-        ax[2].add_collection(coll3)
-
-        ax[0].set_xlim(1.8, 4.0)
-        ax[0].set_ylim(-2.0, 2.0)
-
-        # sanity check - plot grid from list of cell objects
-        # fig2, ax2 = plt.subplots(ncols=1)
-        # for cell in self.cells:
-        #     r,z = cell.poly.exterior.xy
-        #     ax2.plot(r,z, '-k')
-        #     ax2.plot(cell.R, cell.Z, 'ob')
-        # plt.show()
-
-    def plot_H_lines(self):
-
-        # PLOT H-ALPHA, BETA, GAMMA, EPSILON
-        fig, ax = plt.subplots(ncols=4, sharex=True, sharey=True)
-        ax[0].set_xlim(2.36, 2.96)
-        ax[0].set_ylim(-1.73, -1.29)
-        for H_line_key in self.spec_line_dict['1']['1'].keys():
-            if self.spec_line_dict['1']['1'][H_line_key][0] == '3' and self.spec_line_dict['1']['1'][H_line_key][1] == '2':
-                cell_patches=[]
-                H_line=[]
-                for cell in self.cells:
-                    cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
-                    H_line.append(cell.H_emiss[H_line_key]['excit'] + cell.H_emiss[H_line_key]['recom'])
-
-                coll1 = PatchCollection(cell_patches, zorder=1)
-                colors = plt.cm.jet(H_line/np.max(H_line))
-                coll1.set_color(colors)
-                ax[0].add_collection(coll1)
-                ax[0].set_yscale
-                ax[0].set_title(H_line_key)
-            if self.spec_line_dict['1']['1'][H_line_key][0] == '4' and self.spec_line_dict['1']['1'][H_line_key][1] == '2':
-                cell_patches=[]
-                H_line=[]
-                for cell in self.cells:
-                    cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
-                    H_line.append(cell.H_emiss[H_line_key]['excit'] + cell.H_emiss[H_line_key]['recom'])
-
-                coll1 = PatchCollection(cell_patches, zorder=1)
-                colors = plt.cm.jet(H_line/np.max(H_line))
-                coll1.set_color(colors)
-                ax[1].add_collection(coll1)
-                ax[1].set_yscale
-                ax[1].set_title(H_line_key)
-            if self.spec_line_dict['1']['1'][H_line_key][0] == '5' and self.spec_line_dict['1']['1'][H_line_key][1] == '2':
-                cell_patches=[]
-                H_line=[]
-                for cell in self.cells:
-                    cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
-                    H_line.append(cell.H_emiss[H_line_key]['excit'] + cell.H_emiss[H_line_key]['recom'])
-
-                coll1 = PatchCollection(cell_patches, zorder=1)
-                colors = plt.cm.jet(H_line/np.max(H_line))
-                coll1.set_color(colors)
-                ax[2].add_collection(coll1)
-                ax[2].set_yscale
-                ax[2].set_title(H_line_key)
-            if self.spec_line_dict['1']['1'][H_line_key][0] == '7' and self.spec_line_dict['1']['1'][H_line_key][1] == '2':
-                cell_patches=[]
-                H_line=[]
-                for cell in self.cells:
-                    cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
-                    H_line.append(cell.H_emiss[H_line_key]['excit'] + cell.H_emiss[H_line_key]['recom'])
-
-                coll1 = PatchCollection(cell_patches, zorder=1)
-                colors = plt.cm.jet(H_line/(0.5*np.max(H_line)))
-                coll1.set_color(colors)
-                ax[3].add_collection(coll1)
-                ax[3].set_yscale
-                ax[3].set_title(H_line_key)
-
-        # PLOT SEPARATRIX
-        ax[0].add_patch(self.sep_poly)
-        ax[1].add_patch(self.sep_poly)
-        ax[2].add_patch(self.sep_poly)
-        ax[3].add_patch(self.sep_poly)
-
-        # PLOT WALL
-        ax[0].add_patch(self.wall_poly)
-        ax[1].add_patch(self.wall_poly)
-        ax[2].add_patch(self.wall_poly)
-        ax[3].add_patch(self.wall_poly)
-
-        # # PLOT ENTIRE VESSEL
-        # RStart = 1.6
-        # REnd = 4.0
-        # ZStart = 2.05
-        # ZEnd = -1.85
-        # PlotWall(RStart, REnd, ZStart, ZEnd, ax[2])
-
-        ax[0].set_xlim(2.36, 2.96)
-        ax[0].set_ylim(-1.73, -1.29)
-
-    def plot_ff_fb_filtered_emiss(self, diag_list=[], plot_LOS=False, Rrng=None, Zrng=None, savefig=False):
-
-        fig, ax = plt.subplots(ncols=1, figsize=(10,8))
-        fig.patch.set_facecolor('white')
-        if Rrng != None and Zrng != None:
-            ax.set_xlim(Rrng[0], Rrng[1])
-            ax.set_ylim(Zrng[0], Zrng[1])
-        else:
-            ax.set_xlim(1.8, 4.0)
-            ax.set_ylim(-2.0, 2.0)
-
-        cell_patches=[]
-        ff_fb_emiss=[]
-        for cell in self.cells:
-            cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
-            ff_fb_emiss.append(cell.ff_fb_emiss['ff_fb'])
-
-        coll1 = PatchCollection(cell_patches, zorder=1)
-        colors = plt.cm.hot(ff_fb_emiss/(1.5*np.max(ff_fb_emiss)))
-
-        coll1.set_color(colors)
-        collplt = ax.add_collection(coll1)
-        # collplt.set_array(np.array(colors[:,0]))
-        ax.set_yscale
-
-        # Get cwl of the bandpass filter
-        title = 'Bremss. 400.96 nm'
-        ax.set_title(title)
-        plt.gca().set_aspect('equal', adjustable='box')
-
-        # ADD COLORBAR
-        from mpl_toolkits.axes_grid1 import make_axes_locatable
-        divider = make_axes_locatable(ax)
-        cbar_ax = divider.append_axes('right', size='7%', pad=0.1)
-
-        # Very ugly workaround to scale the colorbar without clobbering the patch collection plot
-        # (https://medium.com/data-science-canvas/way-to-show-colorbar-without-calling-imshow-or-scatter)
-        sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=0, vmax=np.max(ff_fb_emiss)))
-        sm._A = []
-
-        cbar = fig.colorbar(sm, cax=cbar_ax)
-        label =  '$\mathrm{ph\/s^{-1}\/m^{-3}\/sr^{-1}}$'
-        cbar.set_label(label)
-
-        # ADD DIAG LOS
-        if self.synth_diag and plot_LOS:
-            for diag_key in self.synth_diag:
-                for req_diag in diag_list:
-                    if req_diag == diag_key:
-                        self.synth_diag[diag_key].plot_LOS(ax, color='w', lw=1.0, Rrng=[2.55, 2.82])
-
-        # PLOT SEPARATRIX AND WALL
-        ax.add_patch(self.sep_poly)
-        ax.add_patch(self.wall_poly)
-
-        if savefig:
-            plt.savefig(title + '.png', dpi=plt.gcf().dpi)
-
-    def plot_imp_lines(self, at_num, ion_stage, line_key, diag_list=[], plot_LOS=False, Rrng=None, Zrng=None, savefig=False):
-
-        # PLOT nitrogen lines
-        # TODO: need to make this more general
-
-        if self.spec_line_dict[at_num][ion_stage][line_key]:
-            fig, ax = plt.subplots(ncols=1, figsize=(10,8))
-            fig.patch.set_facecolor('white')
-            if Rrng != None and Zrng != None:
-                ax.set_xlim(Rrng[0], Rrng[1])
-                ax.set_ylim(Zrng[0], Zrng[1])
-            else:
-                ax.set_xlim(1.8, 4.0)
-                ax.set_ylim(-2.0, 2.0)
-
-            cell_patches=[]
-            imp_line=[]
-            for cell in self.cells:
-                cell_patches.append(patches.Polygon(cell.poly.exterior.coords, closed=True, zorder=1))
-                imp_line.append(cell.imp_emiss[at_num][ion_stage][line_key]['excit'] + cell.imp_emiss[at_num][ion_stage][line_key]['recom'])
-                # imp_line.append((cell.imp_emiss[at_num][ion_stage][line_key]['fPEC_excit']+cell.imp_emiss[at_num][ion_stage][line_key]['fPEC_recom'])*cell.ne)
-
-            # coll1 = PatchCollection(cell_patches, cmap=matplotlib.cm.hot, norm=matplotlib.colors.LogNorm(), zorder=1, lw=0)
-            # coll1 = PatchCollection(cell_patches, cmap=matplotlib.cm.hot, zorder=1, lw=0)
-            coll1 = PatchCollection(cell_patches, zorder=1)
-            # coll1.set_array(np.asarray(imp_line))
-            colors = plt.cm.hot(imp_line/np.max(imp_line))
-
-            coll1.set_color(colors)
-            collplt = ax.add_collection(coll1)
-            # collplt.set_array(np.array(colors[:,0]))
-            ax.set_yscale
-            line_wv = float(line_key) / 10.
-            at_sym[int(at_num)-1]
-            title = at_sym[int(at_num)-1] + ' ' + roman[int(ion_stage)-1] + ' ' + '{:5.1f}'.format(line_wv) + ' nm'
-            ax.set_title(title)
-            plt.gca().set_aspect('equal', adjustable='box')
-
-            # ADD COLORBAR
-            from mpl_toolkits.axes_grid1 import make_axes_locatable
-            divider = make_axes_locatable(ax)
-            cbar_ax = divider.append_axes('right', size='7%', pad=0.1)
-
-            # Very ugly workaround to scale the colorbar without clobbering the patch collection plot
-            # (https://medium.com/data-science-canvas/way-to-show-colorbar-without-calling-imshow-or-scatter)
-            sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=0, vmax=np.max(imp_line)))
-            sm._A = []
-
-            cbar = fig.colorbar(sm, cax=cbar_ax)
-            label =  '$\mathrm{ph\/s^{-1}\/m^{-3}\/sr^{-1}}$'
-            cbar.set_label(label)
-
-            # ADD DIAG LOS
-            if self.synth_diag and plot_LOS:
-                for diag_key in self.synth_diag:
-                    for req_diag in diag_list:
-                        if req_diag == diag_key:
-                            self.synth_diag[diag_key].plot_LOS(ax, color='w', lw=1.0, Rrng=[2.55, 2.82])
-
-            # PLOT SEPARATRIX AND WALL
-            ax.add_patch(self.sep_poly)
-            ax.add_patch(self.wall_poly)
-
-            if savefig:
-                plt.savefig(title + '.png', dpi=plt.gcf().dpi)
-        else:
-            print(line_key, ' not found in post-processed impurity emisison.')
 
 class LOS:
 
