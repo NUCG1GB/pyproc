@@ -96,7 +96,7 @@ class PyprocAnalyse(PyprocProcess):
         self.recover_line_int_ff_fb_Te(res_dict)
 
         # Recombination and Ionization
-        self.recover_line_int_particle_bal(res_dict)
+        self.recover_line_int_particle_bal(res_dict, sion_H_transition=['3','2'])
 
         # delL * neutral density from Ly-alpha assuming excitation dominated
         self.recover_delL_atomden_product(res_dict)
@@ -354,7 +354,7 @@ class PyprocAnalyse(PyprocProcess):
                         ##### Add fit ne result to dictionary
                         res_dict[diag_key][chord_key]['los_int']['stark'] = {'fit': {'ne': fit_ne, 'units': 'm^-3'}}
 
-    def recover_line_int_particle_bal(self, res_dict):
+    def recover_line_int_particle_bal(self, res_dict, sion_H_transition=['3','2']):
         """
             ESTIMATE RECOMBINATION/IONISATION RATES USING ADF11 ACD, SCD COEFF
         """
@@ -365,7 +365,9 @@ class PyprocAnalyse(PyprocProcess):
                     res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_360_400']):
 
                     fit_ne = res_dict[diag_key][chord_key]['los_int']['stark']['fit']['ne']
-                    fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_360_400']
+                    # fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_360_400']
+                    # Use highest Te estimate from continuum (usually not available from experiment)
+                    fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_400_500']
 
                     print('Ionization/recombination, LOS id= :', diag_key, ' ', chord_key)
 
@@ -384,10 +386,10 @@ class PyprocAnalyse(PyprocProcess):
                             srec = 1.0E-04 * area_cm2 * h72 * 4. * np.pi * \
                                    self.ADAS_dict['adf11']['1'].acd[idxTe, idxne] / \
                                    self.ADAS_dict['adf15']['1']['1'][H_line_key + 'recom'].pec[idxTe, idxne]
-                        if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == '2' and \
-                                        res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == '1':
-                            h21_excit = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']
-                            sion = 1.0E-04 * area_cm2 * h21_excit * 4. * np.pi * \
+                        if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == sion_H_transition[0] and \
+                                        res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == sion_H_transition[1]:
+                            h_excit = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']
+                            sion = 1.0E-04 * area_cm2 * h_excit * 4. * np.pi * \
                                    self.ADAS_dict['adf11']['1'].scd[idxTe, idxne] / \
                                    self.ADAS_dict['adf15']['1']['1'][H_line_key + 'excit'].pec[idxTe, idxne]
 

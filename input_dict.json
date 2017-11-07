@@ -1,6 +1,10 @@
 {
   "machine": "JET",
-  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/oct2117/seq#3/tran",
+//  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/oct1917/seq#1/tran",
+//  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/nov0517/seq#1/tran",
+  "tranfile": "/common/cmg/bloman/edge2d/runs/run602/tran",
+//  "tranfile": "/work/jsimpson/cmg/catalog/edge2d/jet/85274/aug0717/seq#27/tran",
+//  "tranfile": "/work/jsimpson/cmg/catalog/edge2d/jet/85274/aug0717/seq#27/tran",
   "diag_list": [
     "KT3",
     "KT1V",
@@ -8,31 +12,31 @@
     "KB5H"
   ],
   "pulse": 90000,
-  "read_ADAS": true,
-//  "read_ADAS_lytrap": {
-//    "read": false,
-//    "adf11_dir": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity",
-//    "spec_line_dict": {
-//      "1": {
-//        "1": {
-//          "1215.67": [
-//            "2",
-//            "1"
-//          ],
-//          "1025.72": [
-//            "3",
-//            "1"
-//          ],
-//          "6564.57": [
-//            "3",
-//            "2"
-//          ]
-//        }
-//      }
-//    },
-//    "pec_file": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity/pec16_h0.dat",
-//    "adf11_year": 96
-//  },
+  "read_ADAS": false,
+  "read_ADAS_lytrap": {
+    "read": true,
+    "adf11_dir": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity",
+    "spec_line_dict": {
+      "1": {
+        "1": {
+          "1215.67": [
+            "2",
+            "1"
+          ],
+          "1025.72": [
+            "3",
+            "1"
+          ],
+          "6564.57": [
+            "3",
+            "2"
+          ]
+        }
+      }
+    },
+    "pec_file": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity/pec16_h0.dat",
+    "adf11_year": 96
+  },
   "spec_line_dict": {
     "1": {
       "1": {
@@ -53,27 +57,28 @@
           "2"
         ],
         "4339.9": [
-          "5", 
+          "5",
           "2"
-        ], 
+        ],
         "4101.2": [
           "6",
           "2"
         ],
         "3969.5": [
-          "7", 
+          "7",
           "2"
         ]
       }
-    }, 
+//    }
+    },
     "4": {
       "2": {
         "5272.32": [
-          "4s", 
+          "4s",
           "3p"
         ]
       }
-    }, 
+    },
     "7": {
       "2": {
         "5002.18": [
@@ -99,13 +104,13 @@
       },
       "3": {
         "4100.51": [
-          "3p", 
+          "3p",
           "3s"
         ]
       },
       "4": {
         "3481.83": [
-          "3p", 
+          "3p",
           "3s"
         ],
         "4058.90": [

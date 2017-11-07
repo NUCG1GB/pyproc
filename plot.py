@@ -3,6 +3,8 @@ import numpy as np
 import json, pprint, pickle
 import operator
 from functools import reduce
+import matplotlib
+matplotlib.use('TKAgg', force=True)
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib import patches
@@ -121,7 +123,8 @@ class PyprocPlot():
             x = p2[:,0]
 
         ne = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'stark', 'fit', 'ne'])
-        Te_hi = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_360_400'])
+        # Te_hi = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_360_400'])
+        Te_hi = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_400_500'])
         Te_lo = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'ff_fb_continuum', 'fit', 'fit_te_300_360'])
 
         Sion_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Sion'])
@@ -486,10 +489,11 @@ class PyprocPlot():
         return sorted_parvals
 
     def plot_2d_spec_line(self, at_num, ion_stage, line_key, diagLOS, Rrng=None, Zrng=None,
-                       savefig=False):
+                          min_clip=0.0, max_clip = 1.0, savefig=False):
 
-        fig, ax = plt.subplots(ncols=1, figsize=(10, 8))
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
         fig.patch.set_facecolor('white')
+
         if Rrng and Zrng:
             ax.set_xlim(Rrng[0], Rrng[1])
             ax.set_ylim(Zrng[0], Zrng[1])
@@ -514,11 +518,23 @@ class PyprocPlot():
         # coll1 = PatchCollection(cell_patches, cmap=matplotlib.cm.hot, zorder=1, lw=0)
         coll1 = PatchCollection(cell_patches, zorder=1)
         # coll1.set_array(np.asarray(imp_line))
-        colors = plt.cm.hot(spec_line / np.max(spec_line))
+
+        # Clip color scale with min and max threshold
+        cscale_min = min_clip * np.max(spec_line)
+        cscale_max = max_clip * np.max(spec_line)
+
+        spec_line_clipped = []
+        for i, cell_emiss in enumerate(spec_line):
+            if cell_emiss >= cscale_min and cell_emiss <= cscale_max:
+                spec_line_clipped.append(cell_emiss)
+            elif cell_emiss >= cscale_max:
+                spec_line_clipped.append(cscale_max)
+            else:
+                spec_line_clipped.append(0.0)
+        colors = plt.cm.hot(spec_line_clipped / np.max(spec_line_clipped))
 
         coll1.set_color(colors)
         collplt = ax.add_collection(coll1)
-        # collplt.set_array(np.array(colors[:,0]))
         ax.set_yscale
         line_wv = float(line_key) / 10.
         title = self.case + ' ' + process.at_sym[int(at_num) - 1] + ' ' + process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
@@ -533,9 +549,10 @@ class PyprocPlot():
 
         # Very ugly workaround to scale the colorbar without clobbering the patch collection plot
         # (https://medium.com/data-science-canvas/way-to-show-colorbar-without-calling-imshow-or-scatter)
-        sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=0, vmax=np.max(spec_line)))
+        sm = plt.cm.ScalarMappable(cmap=plt.cm.hot,
+                                   norm=plt.Normalize(vmin=cscale_min,
+                                                      vmax=cscale_max))
         sm._A = []
-
         cbar = fig.colorbar(sm, cax=cbar_ax)
         label = '$\mathrm{ph\/s^{-1}\/m^{-3}\/sr^{-1}}$'
         cbar.set_label(label)
@@ -546,8 +563,9 @@ class PyprocPlot():
                 self.__data2d.synth_diag[diag].plot_LOS(ax, color='w', lw=1.0)
 
         # PLOT SEPARATRIX AND WALL
-        ax.add_patch(self.__data2d.sep_poly)
         ax.add_patch(self.__data2d.wall_poly)
+        ax.add_patch(self.__data2d.sep_poly)
+
 
         if savefig:
             plt.savefig(self.work_dir + self.case + '/' + title + '.png', dpi=plt.gcf().dpi)
@@ -685,7 +703,8 @@ if __name__=='__main__':
     plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
 
     workdir = '/work/bloman/pyproc/'
-    case = 'bloman_cmg_catalog_edge2d_jet_81472_oct2117_seq#3'
+    # case = 'bloman_cmg_catalog_edge2d_jet_81472_oct2117_seq#3'
+    case = 'jsimpson_cmg_catalog_edge2d_jet_85274_aug0717_seq#27'
 
     Hlines_dict = OrderedDict([
         ('1215.2', ['2', '1']),
@@ -710,8 +729,8 @@ if __name__=='__main__':
 
     spec_line_dict = OrderedDict([
         ('1', {'1': Hlines_dict}),
-        ('4', beryllium_lines_dict),
-        ('7', nitrogen_lines_dict)
+        # ('4', beryllium_lines_dict),
+        # ('7', nitrogen_lines_dict)
     ])
 
     plot_dict = {
@@ -719,7 +738,7 @@ if __name__=='__main__':
         'prof_param_defs':{'diag': 'KT3', 'axs': ax1,
                            'include_pars_at_max_ne_along_LOS': True,
                            'include_sum_Sion_Srec': True,
-                           'include_target_vals': True,
+                           'include_target_vals': False,
                            'coord': 'R', # 'angle' 'R' 'Z'
                            'color': 'blue', 'zorder': 10},
         'prof_Hemiss_defs':{'diag': 'KT3',
@@ -729,19 +748,19 @@ if __name__=='__main__':
                             'coord': 'R', # 'angle' 'R' 'Z'
                             'color': 'b',
                             'zorder': 10},
-        'prof_impemiss_defs':{'diag': 'KT3',
-                              'lines': spec_line_dict,
-                              'excrec': False,
-                              'coord': 'R', # 'angle' 'R' 'Z'
-                              'axs': ax3,
-                              'color': ['r', 'g'],
-                              'zorder': 10},
-        'imp_rad_coeff': {'region': 'vessel',
-                          'atnum': 7,
-                          'ion_stages': [1, 2, 3, 4],
-                          'axs': ax4,
-                          'color': 'r',
-                          'zorder': 10},
+        # 'prof_impemiss_defs':{'diag': 'KT3',
+        #                       'lines': spec_line_dict,
+        #                       'excrec': False,
+        #                       'coord': 'R', # 'angle' 'R' 'Z'
+        #                       'axs': ax3,
+        #                       'color': ['r', 'g'],
+        #                       'zorder': 10},
+        # 'imp_rad_coeff': {'region': 'vessel',
+        #                   'atnum': 7,
+        #                   'ion_stages': [1, 2, 3, 4],
+        #                   'axs': ax4,
+        #                   'color': 'r',
+        #                   'zorder': 10},
         # 'nii_adas_afg': { 'axs': ax5,
         #                   'color': 'r',
         #                   'zorder': 10},
@@ -755,5 +774,6 @@ if __name__=='__main__':
 
     # Print out results dictionary tree
     PyprocPlot.pprint_json(o.res_dict['KT3']['1']['los_int'])
+    # PyprocPlot.pprint_json(o.res_dict['KT3']['1'])
 
     plt.show()
