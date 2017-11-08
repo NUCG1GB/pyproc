@@ -1,4 +1,4 @@
-from pyproc.analyse import PyprocAnalyse
+from pyproc.analyse import AnalyseSynthDiag
 import json, os, sys
 import argparse
 from collections import OrderedDict
@@ -79,7 +79,7 @@ def run_pyproc(input_dict_str):
 
     os.remove('temp.json')
 
-    PyprocAnalyse(input_dict)
+    AnalyseSynthDiag(input_dict)
 
 if __name__=='__main__':
 

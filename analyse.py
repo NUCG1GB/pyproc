@@ -9,10 +9,10 @@ import os
 import sys
 import contextlib
 
-from pyproc.process import PyprocProcess
+from pyproc.process import ProcessEdgeSim
 from pyproc.pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
 
-class PyprocAnalyse(PyprocProcess):
+class AnalyseSynthDiag(ProcessEdgeSim):
     """
         Inherits from Pyproc and adds methods for analysis of synthetic spectra
     """
@@ -214,8 +214,8 @@ class PyprocAnalyse(PyprocProcess):
             else:
                 print('ADAS dictionary restored.')
         else:
-            with PyprocAnalyse.stdchannel_redirected(sys.stderr, os.devnull):
-                with PyprocAnalyse.stdchannel_redirected(sys.stdout, os.devnull):
+            with AnalyseSynthDiag.stdchannel_redirected(sys.stderr, os.devnull):
+                with AnalyseSynthDiag.stdchannel_redirected(sys.stdout, os.devnull):
                     # Read all necessary ADAS data here and store in dict
                     ADAS_dict = {}
                     Te_rnge = [0.2, 5000]

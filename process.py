@@ -1,6 +1,4 @@
 
-# Import external modules
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -13,18 +11,6 @@ from scipy.interpolate import interp1d
 from shapely.geometry import Polygon, LineString
 from pyproc.machine_defs import get_DIIIDdefs, get_JETdefs
 from pyproc.pyADASread import adas_adf11_read, adas_adf15_read, continuo_read
-
-# font = {'family': 'normal',
-#         'weight': 'normal',
-#         'size': 16}
-# import matplotlib
-# matplotlib.rc('font', **font)
-# import matplotlib.font_manager as font_manager
-# path = '/usr/share/fonts/msttcore/arial.ttf'
-# prop = font_manager.FontProperties(fname=path)
-# matplotlib.rcParams['font.family'] = prop.get_name()
-# matplotlib.rcParams['mathtext.fontset'] = 'custom'
-# matplotlib.rcParams['mathtext.rm'] = prop.get_name()
 
 at_sym = ['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg',
           'Al','SI','P','S','CL','AR','K','CA','SC','TI','V','CR',
@@ -79,7 +65,7 @@ class Region:
 
         return False
     
-class PyprocProcess:
+class ProcessEdgeSim:
     """
         Class to read and store EDGE2D-EIRENE results
     """
@@ -937,13 +923,12 @@ class PyprocProcess:
         if los.los_poly.intersects(self.shply_sep_poly_below_xpt):
             los.shply_intersects_w_sep = None#los.shply_cenline.intersection(self.shply_sep_poly_below_xpt)
 
-    def ion_balance_OT(self):
+    def ion_balance_OT(self, nrings=20):
         # RING-WISE IONISATION VS TARGET FLUX COMPARISON
 
         IDL_EprocRing= idl.export_function("EprocRing") # This function is now depracated!
         IDL_EprocRow= idl.export_function("EprocRow") # This function is now depracated!
 
-        nrings = 20
         for iring in range(0,nrings):
             labelarg = 'S' + str(iring)
             pflxd = IDL_EprocRing(self.tranfile, 'PFLXD', labelarg, PARALLEL=0)

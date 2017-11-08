@@ -10,14 +10,14 @@ from matplotlib.collections import PatchCollection
 from matplotlib import patches
 from collections import OrderedDict
 from pyproc import process
-from pyproc.analyse import PyprocAnalyse
-from pyproc.process import PyprocProcess
+from pyproc.analyse import AnalyseSynthDiag
+from pyproc.process import ProcessEdgeSim
 
 def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx, array[idx]
 
-class PyprocPlot():
+class Plot():
     """
         Class for retrieving, reducing and plotting pyproc saved data
     """
@@ -43,12 +43,12 @@ class PyprocPlot():
 
         if plot_dict:
             # First restore (or re-read) the ADAS_dict
-            self.ADAS_dict = PyprocAnalyse.get_ADAS_dict(self.work_dir, plot_dict['spec_line_dict'], restore=True)
+            self.ADAS_dict = AnalyseSynthDiag.get_ADAS_dict(self.work_dir, plot_dict['spec_line_dict'], restore=True)
             for key, val in plot_dict.items():
                 if key == 'spec_line_dict_lytrap':
-                    self.ADAS_dict_lytrap = PyprocAnalyse.get_ADAS_dict(self.work_dir,
-                                                                        plot_dict['spec_line_dict_lytrap'],
-                                                                        restore=True, lytrap=True)
+                    self.ADAS_dict_lytrap = AnalyseSynthDiag.get_ADAS_dict(self.work_dir,
+                                                                           plot_dict['spec_line_dict_lytrap'],
+                                                                           restore=True, lytrap=True)
                 if key == 'prof_param_defs':
                     self.plot_profiles()
                 if key == 'prof_Hemiss_defs':
@@ -85,7 +85,7 @@ class PyprocPlot():
         for key, value in resdict.items():
             print('\t' * indent + str(key))
             if isinstance(value, dict):
-                PyprocPlot.pprint_json(value, indent + 1)
+                Plot.pprint_json(value, indent + 1)
             else:
                 if isinstance(value, list):
                     print('\t' * (indent+1) + '[list]')
@@ -477,7 +477,7 @@ class PyprocPlot():
         tmp = []
         chordidx = []
         for chord in self.__res_dict[diag]:
-            parval = PyprocPlot.get_from_dict(self.__res_dict[diag][chord], mapList)
+            parval = Plot.get_from_dict(self.__res_dict[diag][chord], mapList)
             # if isinstance(parval, float):
             tmp.append(parval)
             chordidx.append(int(chord)-1)
@@ -770,10 +770,10 @@ if __name__=='__main__':
         '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3'], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29], 'save': False}
     }
 
-    o = PyprocPlot(workdir, case, plot_dict=plot_dict)
+    o = Plot(workdir, case, plot_dict=plot_dict)
 
     # Print out results dictionary tree
-    PyprocPlot.pprint_json(o.res_dict['KT3']['1']['los_int'])
+    Plot.pprint_json(o.res_dict['KT3']['1']['los_int'])
     # PyprocPlot.pprint_json(o.res_dict['KT3']['1'])
 
     plt.show()
