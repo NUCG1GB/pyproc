@@ -53,6 +53,10 @@ class Region:
         self.Prad_imp2 = 0.0
         self.Prad_units = 'W'
 
+        # Main ion ionization and recombination [units: s^-1]
+        self.Sion = 0.0
+        self.Srec = 0.0
+
     def cell_in_region(self, cell, shply_sep_poly):
 
         if cell.Z >= self.Zmin and cell.Z <= self.Zmax and cell.R >= self.Rmin and cell.R <= self.Rmax:
@@ -184,7 +188,7 @@ class ProcessEdgeSim:
         # CALULCATE PRAD IN DEFINED MACRO REGIONS
         # TODO: Add opacity calcs
         if self.regions:
-            self.calc_regions_rad_power()
+            self.calc_region_aggregates()
 
         # CALCULATE POWER FLOW INTO INNER AND OUTER DIVERTOR AT Z=-1.2
         self.calc_qpol_div()
@@ -639,13 +643,6 @@ class ProcessEdgeSim:
                 # create Cell object for each polygon containing the relevant field data
                 shply_poly = Polygon(poly.get_xy())
 
-                # SCALE TE NE N0: FOR TESTING ONLY. MUST BE COMMENTED OUT!
-                # te_scal=1.0
-                # ne_scal=1.0
-                # if self.zv[k][0] <= -1.6:
-                #     n0_scal=1000.0
-                # else:
-                #     n0_scal = 1.0
                 te_scal = 1.0
                 ne_scal = 1.0
                 n0_scal = 1.0
@@ -904,7 +901,7 @@ class ProcessEdgeSim:
             if los.los_poly.contains(cell.poly):
                 los.cells.append(cell)
             # check if cell interstects with los.poly
-            if los.los_poly.intersects(cell.poly):
+            elif los.los_poly.intersects(cell.poly):
                 clipped_poly = los.los_poly.intersection(cell.poly)
                 if clipped_poly.geom_type == 'Polygon':
                     centroid_p = clipped_poly.centroid
@@ -987,8 +984,11 @@ class ProcessEdgeSim:
         print('Pdiv_LFS (MW): ', self.qpol_div_LFS*1.e-06, 'Pdiv_HFS (MW): ', self.qpol_div_HFS*1.e-06, 'POWSOL (MW): ', self.powsol['data'][0]*1.e-06)
 
 
-    def calc_regions_rad_power(self):
+    def calc_region_aggregates(self):
 
+        # Calculates for each region:
+        #   radiated power
+        #   ionisation and recombination
         for regname, region in self.regions.items():
             for cell in self.cells:
                 if region.cell_in_region(cell, self.shply_sep_poly):
@@ -999,7 +999,9 @@ class ProcessEdgeSim:
                         region.Prad_imp1 += np.sum(cell.imp1_radpwr)
                     if self.imp2_atom_num:
                         region.Prad_imp2 += np.sum(cell.imp2_radpwr)
-
+                    # ionization/recombination * cell volume
+                    region.Sion += cell.Sion * 2.*np.pi*cell.R * cell.poly.area
+                    region.Srec += cell.Srec * 2.*np.pi*cell.R * cell.poly.area
 
     def plot_region(self, name='LFS_DIV'):
 
