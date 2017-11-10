@@ -245,6 +245,7 @@ class ProcessEdgeSim:
                 outdict[diag_key].update({chord.chord_num:{}})
                 # outdict[diag_key][chord.chord_num].update({'H_emiss':chord.los_int['H_emiss']})
                 outdict[diag_key][chord.chord_num]['spec_line_dict'] = self.spec_line_dict
+                outdict[diag_key][chord.chord_num]['spec_line_dict_lytrap'] = self.spec_line_dict_lytrap
                 outdict[diag_key][chord.chord_num]['los_1d'] = chord.los_1d
                 outdict[diag_key][chord.chord_num]['los_int'] = chord.los_int
                 for spectrum in chord.los_int_spectra:

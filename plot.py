@@ -46,15 +46,15 @@ class Plot():
             self.ADAS_dict = AnalyseSynthDiag.get_ADAS_dict(self.work_dir, plot_dict['spec_line_dict'], restore=True)
             for key, val in plot_dict.items():
                 if key == 'spec_line_dict_lytrap':
-                    self.ADAS_dict_lytrap = AnalyseSynthDiag.get_ADAS_dict(self.work_dir,
+                    self.ADAS_dict_lytrap = AnalyseSynthDiag.get_ADAS_dict(self.work_dir + self.case + '/',
                                                                            plot_dict['spec_line_dict_lytrap'],
                                                                            restore=True, lytrap=True)
                 if key == 'prof_param_defs':
-                    self.plot_profiles()
+                    self.plot_param_profiles()
                 if key == 'prof_Hemiss_defs':
-                    self.plot_Hemiss_prof()
+                    self.plot_Hemiss_profiles()
                 if key == 'prof_impemiss_defs':
-                    self.plot_impemiss_prof()
+                    self.plot_impemiss_profiles()
                 if key == '2d_defs':
                     diagLOS = val['diagLOS']
                     savefig = val['save']
@@ -100,7 +100,7 @@ class Plot():
     def get_from_dict(dataDict, mapList):
         return reduce(operator.getitem, mapList, dataDict)
 
-    def plot_profiles(self):
+    def plot_param_profiles(self):
 
         # PLOT RADIAL PROFILES OF SYNTHETIC LINE-INTEGRATED RECOVERED PARAMS
         axs = self.plot_dict['prof_param_defs']['axs']
@@ -156,12 +156,6 @@ class Plot():
             axs[0].plot(x, ne_max, '-', c='darkgray', lw=2, zorder=1)
             axs[1].plot(x, te_max, '-', c='darkgray', lw=2, zorder=1)
             axs[3].plot(x, n0_max, '-', c='darkgray', lw=2, zorder=1)
-
-        if self.plot_dict['prof_param_defs']['include_sum_Sion_Srec']:
-            Sion = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Sion', 'val'])
-            Srec = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Srec', 'val'])
-            axs[2].plot(x, Sion, '-', c='darkgray', lw=2, zorder=1)
-            axs[2].plot(x, -1.0*Srec, '--', c='darkgray', lw=2, zorder=1)
         
         if self.plot_dict['prof_param_defs']['include_target_vals']:
             axs[0].plot(self.data2d.denel_OT['xdata'][:self.data2d.denel_OT['npts']]+self.data2d.osp[0],
@@ -182,19 +176,34 @@ class Plot():
                         self.data2d.da_OT['ydata'][:self.data2d.da_OT['npts']], 'o', mfc='None',
                         mec=color, mew=2.0, ms=8)
 
+        if self.plot_dict['prof_param_defs']['include_sum_Sion_Srec']:
+            Sion = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Sion', 'val'])
+            Srec = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'Srec', 'val'])
+            axs[2].plot(x, Sion, '-', c='darkgray', lw=2, zorder=1)
+            axs[2].plot(x, -1.0*Srec, '--', c='darkgray', lw=2, zorder=1)
+
+            # Output Sion/Srec direct and spectroscopically inferred summations
+            R = p2[:, 0]
+            inner_idx, = np.where(R < self.__data2d.geom['rpx'])
+            outer_idx, = np.where(R >= self.__data2d.geom['rpx'])
+            print('')
+            print(diag, ' particle balance')
+            print('Direct sum of Sion, Srec along LOS [s^-1]')
+            print('Total (R < R_xpt) :', np.sum(Sion[inner_idx]), np.sum(Srec[inner_idx]))
+            print('Total (R >= R_xpt) :', np.sum(Sion[outer_idx]), np.sum(Srec[outer_idx]))
+            print('adf11 Sion, Srec estimates[s^-1]')
+            print('Total (R < R_xpt) :', np.sum(Sion_adf11[inner_idx]), np.sum(Srec_adf11[inner_idx]))
+            print('Total (R >= R_xpt) :', np.sum(Sion_adf11[outer_idx]), np.sum(Srec_adf11[outer_idx]))
+            print('')
 
         # legend
         # axes_dict['main'][0].plot([0, 0], [0, 0], c=sim_c, lw=2, label='simulation')
 
-        # xpt, osp locations
-        axs[0].plot([self.__data2d.geom['rpx'], self.__data2d.geom['rpx']], [0, 1e21], ':', c='darkgrey', linewidth=1.)
-        axs[1].plot([self.__data2d.geom['rpx'], self.__data2d.geom['rpx']], [0, 20], ':', c='darkgrey', linewidth=1.)
-        axs[2].plot([self.__data2d.geom['rpx'], self.__data2d.geom['rpx']], [1e20, 1e24], ':', c='darkgrey', linewidth=1.)
-        axs[3].plot([self.__data2d.geom['rpx'], self.__data2d.geom['rpx']], [1e17, 1e21], ':', c='darkgrey', linewidth=1.)
-        axs[0].plot([self.__data2d.osp[0], self.__data2d.osp[0]], [0, 1e21], ':', c='darkgrey', linewidth=1.)
-        axs[1].plot([self.__data2d.osp[0], self.__data2d.osp[0]], [0, 20], ':', c='darkgrey', linewidth=1.)
-        axs[2].plot([self.__data2d.osp[0], self.__data2d.osp[0]], [1e20, 1e24], ':', c='darkgrey', linewidth=1.)
-        axs[3].plot([self.__data2d.osp[0], self.__data2d.osp[0]], [1e17, 1e21], ':', c='darkgrey', linewidth=1.)
+        # xpt, isp, osp locations
+        for i in range(len(axs)):
+            axs[i].axvline(self.__data2d.geom['rpx'], ls=':', c='darkgrey', linewidth=1.)
+            axs[i].axvline(self.__data2d.osp[0], ls=':', c='darkgrey', linewidth=1.)
+            axs[i].axvline(self.__data2d.isp[0], ls=':', c='darkgrey', linewidth=1.)
 
         axs[3].set_xlabel('Major radius on tile 5 (m)')
         axs[0].set_ylabel(r'$\mathrm{n_{e}\/(m^{-3})}$')
@@ -207,7 +216,7 @@ class Plot():
 
         # axes_dict['main'][3].set_ylabel(r'$\mathrm{n_{H}\/(m^{-3})}$')
 
-    def plot_Hemiss_prof(self):
+    def plot_Hemiss_profiles(self):
 
         # PLOT RADIAL PROFILES OF SYNTHETIC LINE-INTEGRATED RECOVERED PARAMS
         lines = self.plot_dict['prof_Hemiss_defs']['lines']
@@ -271,6 +280,11 @@ class Plot():
                 leg = axs[1].legend(loc='upper left')
                 leg.get_frame().set_alpha(0.2)
 
+        # xpt, isp, osp locations
+        for i in range(len(axs)):
+            axs[i].axvline(self.__data2d.geom['rpx'], ls=':', c='darkgrey', linewidth=1.)
+            axs[i].axvline(self.__data2d.osp[0], ls=':', c='darkgrey', linewidth=1.)
+            axs[i].axvline(self.__data2d.isp[0], ls=':', c='darkgrey', linewidth=1.)
 
     def plot_nii_adas_afg(self):
 
@@ -301,7 +315,7 @@ class Plot():
             leg = axs.legend(loc='upper right')
             leg.get_frame().set_alpha(0.2)
 
-    def plot_impemiss_prof(self):
+    def plot_impemiss_profiles(self):
 
         # PLOT RADIAL PROFILES OF SYNTHETIC LINE-INTEGRATED RECOVERED PARAMS
         lines = self.plot_dict['prof_impemiss_defs']['lines']
@@ -347,6 +361,12 @@ class Plot():
                         leg = axs[i].legend(loc='upper right')
                         leg.get_frame().set_alpha(0.2)
                 icol += 1
+
+        # xpt, isp, osp locations
+        for i in range(len(axs)):
+            axs[i].axvline(self.__data2d.geom['rpx'], ls=':', c='darkgrey', linewidth=1.)
+            axs[i].axvline(self.__data2d.osp[0], ls=':', c='darkgrey', linewidth=1.)
+            axs[i].axvline(self.__data2d.isp[0], ls=':', c='darkgrey', linewidth=1.)
 
     def plot_imp_rad_coeff(self, region, atnum, ion_stages):
 
@@ -774,6 +794,6 @@ if __name__=='__main__':
 
     # Print out results dictionary tree
     Plot.pprint_json(o.res_dict['KT3']['1']['los_int'])
-    # PyprocPlot.pprint_json(o.res_dict['KT3']['1'])
+    # Plot.pprint_json(o.res_dict['KT3']['1'])
 
     plt.show()

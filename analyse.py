@@ -46,7 +46,7 @@ class AnalyseSynthDiag(ProcessEdgeSim):
         if 'read_ADAS_lytrap' in input_dict:
             self.adas_lytrap = input_dict['read_ADAS_lytrap']
             self.spec_line_dict_lytrap = self.adas_lytrap['spec_line_dict']
-            self.ADAS_dict_lytrap = self.get_ADAS_dict(input_dict['save_dir'],
+            self.ADAS_dict_lytrap = self.get_ADAS_dict(savedir,
                                                         self.spec_line_dict_lytrap,
                                                         restore=not input_dict['read_ADAS_lytrap']['read'],
                                                         adf11_year = self.adas_lytrap['adf11_year'],
@@ -96,7 +96,7 @@ class AnalyseSynthDiag(ProcessEdgeSim):
         self.recover_line_int_ff_fb_Te(res_dict)
 
         # Recombination and Ionization
-        self.recover_line_int_particle_bal(res_dict, sion_H_transition=['3','2'])
+        self.recover_line_int_particle_bal(res_dict, sion_H_transition=['2','1'], ne_scal=1.0)
 
         # delL * neutral density from Ly-alpha assuming excitation dominated
         self.recover_delL_atomden_product(res_dict)
@@ -354,20 +354,30 @@ class AnalyseSynthDiag(ProcessEdgeSim):
                         ##### Add fit ne result to dictionary
                         res_dict[diag_key][chord_key]['los_int']['stark'] = {'fit': {'ne': fit_ne, 'units': 'm^-3'}}
 
-    def recover_line_int_particle_bal(self, res_dict, sion_H_transition=['3','2']):
+    def recover_line_int_particle_bal(self, res_dict, sion_H_transition=['2','1'], ne_scal=1.0):
         """
             ESTIMATE RECOMBINATION/IONISATION RATES USING ADF11 ACD, SCD COEFF
         """
+
+        # Use ADAS adf15,11 data taking into account Ly-series trapping and hence a modification
+        # to the ionization/recombination rates.
+        if self.ADAS_dict_lytrap:
+            ADAS_dict_local = self.ADAS_dict_lytrap
+            spec_line_dict_key = 'spec_line_dict_lytrap'
+        else:
+            ADAS_dict_local = self.ADAS_dict
+            spec_line_dict_key = 'spec_line_dict'
+
         for diag_key in res_dict.keys():
             for chord_key in res_dict[diag_key].keys():
 
                 if (res_dict[diag_key][chord_key]['los_int']['stark']['fit']['ne'] and
                     res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_360_400']):
 
-                    fit_ne = res_dict[diag_key][chord_key]['los_int']['stark']['fit']['ne']
-                    # fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_360_400']
+                    fit_ne = ne_scal*res_dict[diag_key][chord_key]['los_int']['stark']['fit']['ne']
+                    fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_360_400']
                     # Use highest Te estimate from continuum (usually not available from experiment)
-                    fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_400_500']
+                    # fit_Te = res_dict[diag_key][chord_key]['los_int']['ff_fb_continuum']['fit']['fit_te_400_500']
 
                     print('Ionization/recombination, LOS id= :', diag_key, ' ', chord_key)
 
@@ -378,6 +388,10 @@ class AnalyseSynthDiag(ProcessEdgeSim):
                                res_dict[diag_key][chord_key]['chord']['p2'][0]
                     idxTe, Te_val = self.find_nearest(self.ADAS_dict['adf11']['1'].Te_arr, fit_Te)
                     idxne, ne_val = self.find_nearest(self.ADAS_dict['adf11']['1'].ne_arr, fit_ne * 1.0E-06)
+
+                    # Recombination:
+                    # NOTE: D7-2 line must be read from standard ADAS adf15 data as it is above the
+                    # max transition available in the Ly-trapped adf15 files
                     for H_line_key in res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'].keys():
                         if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == '7' and \
                                         res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == '2':
@@ -386,16 +400,24 @@ class AnalyseSynthDiag(ProcessEdgeSim):
                             srec = 1.0E-04 * area_cm2 * h72 * 4. * np.pi * \
                                    self.ADAS_dict['adf11']['1'].acd[idxTe, idxne] / \
                                    self.ADAS_dict['adf15']['1']['1'][H_line_key + 'recom'].pec[idxTe, idxne]
-                        if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == sion_H_transition[0] and \
-                                        res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == sion_H_transition[1]:
+
+                            # Add to results dict
+                            res_dict[diag_key][chord_key]['los_int']['adf11_fit'] = {'Srec': srec, 'units': 's^-1'}
+
+                    # Ionization:
+                    # Use Ly-trapping adf15,11 data if available
+                    for H_line_key in res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'].keys():
+                        if res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'][H_line_key][0] == sion_H_transition[0] and \
+                                        res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'][H_line_key][1] == sion_H_transition[1]:
                             h_excit = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']
                             sion = 1.0E-04 * area_cm2 * h_excit * 4. * np.pi * \
-                                   self.ADAS_dict['adf11']['1'].scd[idxTe, idxne] / \
-                                   self.ADAS_dict['adf15']['1']['1'][H_line_key + 'excit'].pec[idxTe, idxne]
+                                   ADAS_dict_local['adf11']['1'].scd[idxTe, idxne] / \
+                                   ADAS_dict_local['adf15']['1']['1'][H_line_key + 'excit'].pec[idxTe, idxne]
 
-                    ##### Add adf11 srec sion estimates to dictionary
-                    res_dict[diag_key][chord_key]['los_int']['adf11_fit'] = {'Srec': srec, 'Sion': sion,
-                                                                  'units': 's^-1'}
+                            # Add to results dict
+                            res_dict[diag_key][chord_key]['los_int']['adf11_fit']['Sion'] = sion
+
+
 
     def recover_delL_atomden_product(self, res_dict):
         """
