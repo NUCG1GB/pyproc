@@ -104,10 +104,10 @@ imp_line_blocks = {
     '1':
         {'1': {'file': '/home/adas/adas/adf15/pec12#h/pec12#h_pju#h0.dat',
                'blocks': line_blocks}},
-    '4':
+    '4': # Be
         {'2': {'file': '/home/adas/adas/adf15/pec96#be/pec96#be_pju#be1.dat',
                'blocks': {'5272.32excit': 11, '5272.32recom': 32}}},
-    '7':
+    '7': # N
         ###################################################
         # Use Stuart Henderson's latest PEC file for n1 as stage index -1
         {'-1': {'file': '/home/shenders/adas/adas/adf15/pec16#7/pec98#n_ssh_pju#n1.dat',
@@ -122,7 +122,7 @@ imp_line_blocks = {
          '4':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n3.dat',
               'blocks':{'3481.83excit':10, '3481.83recom':51,
                         '4058.90excit':17, '4058.90recom':58}}},
-    '6':
+    '6': # C
         {'1':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c0.dat',
               'blocks':{'9408.4excit':32, '9408.4recom':81}},
          '2':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c1.dat',
@@ -132,9 +132,16 @@ imp_line_blocks = {
               'blocks':{'4650.1excit':2, '4650.1recom':52}},
          '4':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_pju#c3.dat',
                'blocks': {'1549.1excit': 14, '1549.1recom': 55}}},
-    '10':
+    '10': # Ne
         {'2': {'file': '/home/adas/adas/adf15/pec96#ne/pec96#ne_pju#ne1.dat',
-               'blocks': {'3718.2excit': 17, '3718.2recom': 70}}}
+               'blocks': {'3718.2excit': 17, '3718.2recom': 70}}},
+    '74': # W
+        {'1': {'file': '/home/adas/adas/adf15/pec40#w/pec40#w_ls#w0.dat',
+               'blocks': {'3567.64excit': 44},
+               'blocks': {'3674.90excit': 45},
+               'blocks': {'4053.65excit': 48}},
+         '2': {'file': '/home/adas/adas/adf15/pec40#w/pec40#w_ls#w1.dat',
+               'blocks': {'3604.25excit': 50}}}
 }
 
 line_blocks_lytrap = {
@@ -200,8 +207,18 @@ def get_adas_imp_PECs_interp(imp_dict, Te_rnge, ne_rnge, npts=100, npts_interp=1
                 else:
                     line_block_stage = stage
 
-                pec_excit, info = get_imp_adf15_block(Te_arr, ne_arr, species, line_block_stage, key+'excit', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
-                pec_recom, info = get_imp_adf15_block(Te_arr, ne_arr, species, line_block_stage, key+'recom', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
+                if key+'excit' in line_blocks[species][line_block_stage]['blocks']:
+                    pec_excit, info = get_imp_adf15_block(Te_arr, ne_arr, species, line_block_stage, key+'excit', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
+                else:
+                    pec_excit = np.zeros((len(Te_arr), len(ne_arr)))
+                    info=None
+                    print(key+'excit', ' entry does not exist, setting PEC array to zero')
+                if key+'recom' in line_blocks[species][line_block_stage]['blocks']:
+                    pec_recom, info = get_imp_adf15_block(Te_arr, ne_arr, species, line_block_stage, key+'recom', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
+                else:
+                    pec_recom = np.zeros((len(Te_arr), len(ne_arr)))
+                    info=None
+                    print(key+'excit', ' entry does not exist, setting PEC array to zero')
 
                 # linearly interpolate results on finer Te ne grid
                 f_excit = interpolate.interp2d(Te_arr, ne_arr, pec_excit, kind='linear')

@@ -1672,8 +1672,8 @@ if __name__=='__main__':
 
     workdir = '/work/bloman/pyproc/'
     # case = 'bloman_cmg_catalog_edge2d_jet_81472_may0618_seq#1'
-    # case = 'bloman_cmg_catalog_edge2d_jet_81472_jan2918_seq#1'
-    case = "common_cmg_jsimpson_edge2d_runs_run1706183"
+    case = 'pheliste_cmg_catalog_edge2d_jet_81472_jun1116_seq#1'
+    # case = "common_cmg_jsimpson_edge2d_runs_run1706183"
     # case = 'bloman_cmg_catalog_edge2d_jet_81472_may2018_seq#1'
     # case = 'bloman_cmg_catalog_edge2d_jet_81472_mar2318_seq#3'
     # case = 'common_cmg_bloman_edge2d_runs_runpheliste_jul1816_seq2_mod'
@@ -1713,41 +1713,47 @@ if __name__=='__main__':
         ('2', {'3718.2':['3p', '3s']})
     ])
 
+    tungsten_lines_dict = OrderedDict([
+        ('1', {'4053.65':['64a52b56c54d51g51h', '60964a52b56c54d52g']}),
+        ('2', {'3604.25':['60964a52b56c54d51h', '60964a52b56c54d51g']}),
+    ])
+
     spec_line_dict = OrderedDict([
         ('1', {'1': Hlines_dict}),
         # ('4', beryllium_lines_dict),
         # ('7', nitrogen_lines_dict)
         # ('10', neon_lines_dict)
+        ('74', tungsten_lines_dict)
     ])
 
     plot_dict = {
         'spec_line_dict':spec_line_dict,
-        # 'prof_param_defs':{'diag': 'KT3', 'axs': ax1,
-        #                    'include_pars_at_max_ne_along_LOS': True,
-        #                    'include_sum_Sion_Srec': True,
-        #                    'include_target_vals': True,
-        #                    'coord': 'R', # 'angle' 'R' 'Z'
-        #                    'color': 'blue', 'zorder': 10},
-        # 'prof_Hemiss_defs':{'diag': 'KT1V',
-        #                     'lines': spec_line_dict['1']['1'],
-        #                     'excrec': True,
-        #                     'axs': ax2,
-        #                     'coord': 'R', # 'angle' 'R' 'Z'
-        #                     'color': 'b',
-        #                     'zorder': 10},
+        'prof_param_defs':{'diag': 'KT1V', 'axs': ax1,
+                           'include_pars_at_max_ne_along_LOS': True,
+                           'include_sum_Sion_Srec': True,
+                           'include_target_vals': True,
+                           'coord': 'R', # 'angle' 'R' 'Z'
+                           'color': 'blue', 'zorder': 10},
+        'prof_Hemiss_defs':{'diag': 'KT1V',
+                            'lines': spec_line_dict['1']['1'],
+                            'excrec': True,
+                            'axs': ax2,
+                            'coord': 'R', # 'angle' 'R' 'Z'
+                            'color': 'b',
+                            'zorder': 10},
         # 'prof_Prad_defs': {'diag': ['KB5V'], # Allows lists for combined output
         #                    'axs': ax7,
         #                    'coord': 'angle',  # 'angle' 'R' 'Z'
         #                    'color': 'b',
         #                    'write_ppf':False,
         #                    'zorder': 10},
-        # 'prof_impemiss_defs':{'diag': 'KT3',
-        #                       'lines': spec_line_dict,
-        #                       'excrec': False,
-        #                       'coord': 'R', # 'angle' 'R' 'Z'
-        #                       'axs': ax3,
-        #                       'color': ['r', 'g'],
-        #                       'zorder': 10},
+        'prof_impemiss_defs':{'diag': 'KT1V',
+                              'lines': spec_line_dict,
+                              'excrec': False,
+                              'coord': 'R', # 'angle' 'R' 'Z'
+                              'axs': ax3,
+                              'color': ['r', 'g'],
+                              'zorder': 10},
         # 'imp_rad_coeff': {'region': 'vessel',
         #                   'atnum': 7,
         #                   'ion_stages': [1, 2, 3, 4],
@@ -1775,7 +1781,7 @@ if __name__=='__main__':
         #                     'color': 'b',
         #                     'zorder': 10},
         # '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3'], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29], 'save': True},
-        '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3'], 'Rrng': [2.3, 3.0], 'Zrng': [-1.74, -1.3], 'save': False},
+        '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT1V'], 'Rrng': [2.3, 3.0], 'Zrng': [-1.74, -1.3], 'save': True},
         # '2d_prad': {'diagLOS': [], 'Rrng': [2.31, 3.0], 'Zrng': [-1.75, -1.0], 'save': False}
     }
 

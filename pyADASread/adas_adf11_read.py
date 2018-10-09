@@ -5,6 +5,50 @@ from adaslib import *
 from adas4xx import *
 from scipy.interpolate import interp1d, interp2d
 
+
+adf11_files_dict = {
+    '1':
+        {'acd':'/home/adas/adas/adf11/acd12/acd12_h.dat',
+         'scd':'/home/adas/adas/adf11/scd12/scd12_h.dat',
+         'ccd':'/home/adas/adas/adf11/ccd12/ccd12_h.dat',
+         'plt':'/home/adas/adas/adf11/plt12/plt12_h.dat',
+         'prb':'/home/adas/adas/adf11/prb12/prb12_h.dat',
+         'prc':'/home/adas/adas/adf11/prc12/prc12_h.dat'},
+    '4':
+        {'acd': '/home/adas/adas/adf11/acd96/acd96_be.dat',
+         'scd': '/home/adas/adas/adf11/scd96/scd96_be.dat',
+         'ccd': '/home/adas/adas/adf11/ccd89/ccd89_be.dat',
+         'plt': '/home/adas/adas/adf11/plt96/plt96_be.dat',
+         'prb': '/home/adas/adas/adf11/prb96/prb96_be.dat',
+         'prc': '/home/adas/adas/adf11/prc89/prc89_be.dat'},
+    '6':
+        {'acd': '/home/adas/adas/adf11/acd96/acd96_c.dat',
+         'scd': '/home/adas/adas/adf11/scd96/scd96_c.dat',
+         'ccd': '/home/adas/adas/adf11/ccd89/ccd89_c.dat',
+         'plt': '/home/adas/adas/adf11/plt96/plt96_c.dat',
+         'prb': '/home/adas/adas/adf11/prb96/prb96_c.dat',
+         'prc': '/home/adas/adas/adf11/prc89/prc89_c.dat'},
+    '7':
+        {'acd': '/home/adas/adas/adf11/acd96/acd96_n.dat',
+         'scd': '/home/adas/adas/adf11/scd96/scd96_n.dat',
+         # 'ccd': '/home/adas/adas/adf11/ccd96/ccd96_n.dat',
+         'plt': '/home/adas/adas/adf11/plt96/plt96_n.dat',
+         'prb': '/home/adas/adas/adf11/prb96/prb96_n.dat',
+         'prc': '/home/adas/adas/adf11/prc89/prc89_n.dat'},
+    '10':
+        {'acd': '/home/adas/adas/adf11/acd96/acd96_ne.dat',
+         'scd': '/home/adas/adas/adf11/scd96/scd96_ne.dat',
+         # 'ccd': '/home/adas/adas/adf11/ccd96/ccd96_ne.dat',
+         'plt': '/home/adas/adas/adf11/plt96/plt96_ne.dat',
+         'prb': '/home/adas/adas/adf11/prb96/prb96_ne.dat',
+         'prc': '/home/adas/adas/adf11/prc89/prc89_ne.dat'},
+    '74':
+        {'acd': '/home/adas/adas/adf11/acd50/acd50_w.dat',
+         'scd': '/home/adas/adas/adf11/scd50/scd50_w.dat',
+         'plt': '/home/adas/adas/adf11/plt50/plt50_w.dat',
+         'prb': '/home/adas/adas/adf11/prb50/prb50_w.dat'}
+}
+
 Ly_beta_esc_fac_cases = {
     '0':{'Ly_beta_esc_fac':1.00, 'acd_file':'/home/bloman/python_tools/pyADASread/adas_data/acd16_h_Ly_beta_esc_fac.100.dat',
                                  'scd_file':'/home/bloman/python_tools/pyADASread/adas_data/scd16_h_Ly_beta_esc_fac.100.dat'},
@@ -56,9 +100,12 @@ class ADF11:
         self.ne_arr = ne_arr # copy of ne array
 
 class ADF11_imp:
-    def __init__(self, Te_arr, ne_arr, plt, prb, prc, ion_bal_frac, ion_bal_pwr):
+    def __init__(self, Te_arr, ne_arr, acd, scd, ccd, plt, prb, prc, ion_bal_frac, ion_bal_pwr):
         self.Te_arr = Te_arr  # copy of Te array
         self.ne_arr = ne_arr # copy of ne array
+        self.acd = acd # 2D ACD array as fn(Te,ne) units: cm3 s-1
+        self.scd = scd # 2D SCD array as fn(Te,ne) units: cm3 s-1
+        self.ccd = ccd # 2D CCD array as fn(Te,ne) units: cm3 s-1
         self.plt = plt # 2D PLT array as fn(Te,ne) for all ion stages, units: W cm3
         self.prb = prb # 2D PRB array as fn(Te,ne) for all ion stages, units: W cm3
         self.prc = prc # 2D PRC array as fn(Te,ne) for all ion stages, units: W cm3
@@ -72,30 +119,81 @@ def find_nearest(array, value):
 
 def get_adas_imp_adf11(at_num, Te_arr, ne_arr):
 
-    at_num_to_elem = {'H':1, 'He':2, 'Li':3, 'Be':4, 'B':5, 'C':6, 'N':7, 'O':8, 'Ne':10}
+    at_num_to_elem = {'H':1, 'He':2, 'Li':3, 'Be':4, 'B':5, 'C':6, 'N':7, 'O':8, 'Ne':10, 'W':74}
     for elem in at_num_to_elem:
         if at_num_to_elem[elem] == at_num:
-            print('Getting ADF11 data from run_adas405...')
+            print('Getting ADF11 data from run_adas405 and read_adf11')
             # IONISATION BALANCE
-            ion_bal_frac, ion_bal_pwr = run_adas405(elem=elem, uid='adas', year=96, dens=ne_arr, te=Te_arr, all=True)
+            if at_num == 1:
+                year=12
+            elif at_num == 74:
+                year=50
+            else:
+                year = 96
+            ion_bal_frac, ion_bal_pwr = run_adas405(elem=elem, uid='adas', year=year, dens=ne_arr, te=Te_arr, all=True)
 
             # INDIVIDUAL COEFF FOR EACH ION STAGE
+            acd = np.zeros((len(Te_arr), len(ne_arr), at_num))
+            scd = np.zeros((len(Te_arr), len(ne_arr), at_num))
+            ccd = np.zeros((len(Te_arr), len(ne_arr), at_num))
             plt = np.zeros((len(Te_arr), len(ne_arr), at_num))
             prb = np.zeros((len(Te_arr), len(ne_arr), at_num))
             prc = np.zeros((len(Te_arr), len(ne_arr), at_num))
 
-            plt_file = '/home/adas/adas/adf11/plt96/plt96_' + elem.lower() + '.dat'
-            prb_file = '/home/adas/adas/adf11/prb96/prb96_' + elem.lower() + '.dat'
-            prc_file = '/home/adas/adas/adf11/prc89/prc89_' + elem.lower() + '.dat'
-            for ion_stage in range(at_num):
-                print('at_num, stage:', at_num, ion_stage)
-                plt[:,:,ion_stage] = read_adf11(file=plt_file, adf11type='plt', is1=ion_stage+1, te=Te_arr, dens=ne_arr, all=True)
-                prb[:,:,ion_stage] = read_adf11(file=prb_file, adf11type='prb', is1=ion_stage+1, te=Te_arr, dens=ne_arr, all=True)
-                prc[:,:,ion_stage] = read_adf11(file=prc_file, adf11type='prc', is1=ion_stage+1, te=Te_arr, dens=ne_arr, all=True)
+            items = ['acd', 'scd', 'ccd', 'plt', 'prb', 'prc']
+            for coeff in items:
+                if coeff in adf11_files_dict[str(at_num)]:
+                    if coeff == 'acd':
+                        print('acd file: ', adf11_files_dict[str(at_num)][coeff])
+                        for ion_stage in range(at_num):
+                            acd[:, :, ion_stage] = read_adf11(file=adf11_files_dict[str(at_num)][coeff],
+                                                              adf11type=coeff, is1=ion_stage + 1, te=Te_arr,
+                                                              dens=ne_arr, all=True)
+                    elif coeff == 'scd':
+                        print('scd file: ', adf11_files_dict[str(at_num)][coeff])
+                        for ion_stage in range(at_num):
+                            scd[:, :, ion_stage] = read_adf11(file=adf11_files_dict[str(at_num)][coeff],
+                                                              adf11type=coeff, is1=ion_stage + 1, te=Te_arr,
+                                                              dens=ne_arr, all=True)
+                    elif coeff == 'ccd':
+                        print('ccd file: ', adf11_files_dict[str(at_num)][coeff])
+                        for ion_stage in range(at_num):
+                            ccd[:, :, ion_stage] = read_adf11(file=adf11_files_dict[str(at_num)][coeff],
+                                                              adf11type=coeff, is1=ion_stage + 1, te=Te_arr,
+                                                              dens=ne_arr, all=True)
+                    elif coeff == 'plt':
+                        print('plt file: ', adf11_files_dict[str(at_num)][coeff])
+                        for ion_stage in range(at_num):
+                            plt[:, :, ion_stage] = read_adf11(file=adf11_files_dict[str(at_num)][coeff],
+                                                              adf11type=coeff, is1=ion_stage + 1, te=Te_arr,
+                                                              dens=ne_arr, all=True)
+                    elif coeff == 'prb':
+                        print('prb file: ', adf11_files_dict[str(at_num)][coeff])
+                        for ion_stage in range(at_num):
+                            prb[:, :, ion_stage] = read_adf11(file=adf11_files_dict[str(at_num)][coeff],
+                                                              adf11type=coeff, is1=ion_stage + 1, te=Te_arr,
+                                                              dens=ne_arr, all=True)
+                    elif coeff == 'prc':
+                        print('prc file: ', adf11_files_dict[str(at_num)][coeff])
+                        for ion_stage in range(at_num):
+                            prc[:, :, ion_stage] = read_adf11(file=adf11_files_dict[str(at_num)][coeff],
+                                                              adf11type=coeff, is1=ion_stage + 1, te=Te_arr,
+                                                              dens=ne_arr, all=True)
 
-            adf11 = ADF11_imp(Te_arr, ne_arr, plt, prb, prc, ion_bal_frac, ion_bal_pwr)
+            # plt_file = '/home/adas/adas/adf11/plt96/plt96_' + elem.lower() + '.dat'
+            # prb_file = '/home/adas/adas/adf11/prb96/prb96_' + elem.lower() + '.dat'
+            # prc_file = '/home/adas/adas/adf11/prc89/prc89_' + elem.lower() + '.dat'
+
+            # for ion_stage in range(at_num):
+            #     print('at_num, stage:', at_num, ion_stage)
+            #     plt[:,:,ion_stage] = read_adf11(file=plt_file, adf11type='plt', is1=ion_stage+1, te=Te_arr, dens=ne_arr, all=True)
+            #     prb[:,:,ion_stage] = read_adf11(file=prb_file, adf11type='prb', is1=ion_stage+1, te=Te_arr, dens=ne_arr, all=True)
+            #     prc[:,:,ion_stage] = read_adf11(file=prc_file, adf11type='prc', is1=ion_stage+1, te=Te_arr, dens=ne_arr, all=True)
+
+            adf11 = ADF11_imp(Te_arr, ne_arr, acd, scd, ccd, plt, prb, prc, ion_bal_frac, ion_bal_pwr)
+
             print('Done')
-    return adf11
+            return adf11
 
 def get_adas_H_adf11(Te_arr, ne_arr, pwr=False, year=12, custom_dir=None):
 
