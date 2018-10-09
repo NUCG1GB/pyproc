@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import pickle
 import json
 import idlbridge as idl
@@ -140,6 +140,13 @@ class ProcessEdgeSim:
 
         self.readtran_eproc_idl_temp()
 
+        # HACK - MODIFY DENSITY AT R>2.6
+        # for cell in self.cells:
+        #     if cell.R > 2.6:
+        #         cell.ne *=0.1
+        #         cell.n0 *=0.1
+        #         cell.ni *=0.1
+
         # Get machine definitions
         if self.machine == 'JET':
             self.defs = get_JETdefs(pulse_ref=self.pulse)
@@ -170,14 +177,15 @@ class ProcessEdgeSim:
         # TODO: Add opacity calcs
         self.calc_H_emiss()
         self.calc_H_rad_power()
+        self.calc_ff_fb_emiss()
 
         # Calc ff+fb emissivity.
         # Use KL11 cam e WI filter.
         # TODO: generalise to accept other filters
         filter_file = '/home/bloman/python_bal/TomI/kl11_filters/WI40096_kl11_filter_peak_norm.txt'
-        filter_curve = np.genfromtxt(filter_file, delimiter=',', skiprows=4)
+        filter_curve = np.genfromtxt(filter_file, delimiter=',', skip_header=4)
         print('FF+FB emission filter file: ', filter_file)
-        self.calc_ff_fb_emiss(filter_curve[:,0], filter_curve[:,1])
+        self.calc_ff_fb_filtered_emiss(filter_curve[:,0], filter_curve[:,1])
 
         if self.imp1_atom_num or self.imp2_atom_num:
             self.calc_imp_rad_power()
@@ -202,6 +210,7 @@ class ProcessEdgeSim:
                                                      imp1_atom_num=self.imp1_atom_num, imp2_atom_num=self.imp2_atom_num,
                                                      calc_NII_afg_feature=self.calc_NII_afg_feature)
                     for chord in self.synth_diag[key].chords:
+                        # Basic LOS implementation using 2D polygons - no reflections
                         self.los_intersect(chord)
                         chord.orthogonal_polys()
                         chord.calc_int_and_1d_los_quantities()
@@ -291,6 +300,35 @@ class ProcessEdgeSim:
             idl.execute('npts=ret.npts')
             return {'data':idl.get('data'), 'npts':idl.get('npts')}
 
+    def get_eproc_row_ring_from_kval(self, kval):
+
+        row_match = -1
+        ring_match = -1
+        idl.execute("""tranfile=' """ + self.tranfile + """ ' """)
+
+        cmd = 'geom=EprocGeom(tranfile)'
+        idl.execute(cmd)
+        geom = idl.get('geom')
+        nrows = geom['nrows']
+        nrings = geom['nrings']
+        cmd = 'zmesh=EprocDataRead(tranfile,'+ """'""" + 'ZMESH' + """'""" + ')'
+        idl.execute(cmd)
+
+        for irow in range(1,nrows+1):
+            cmd = 'kpts_row = EprocRowPts(' + """'""" + str(irow) + """'""" + ',geom, zmesh)'
+            idl.execute(cmd)
+            kpts_row = idl.get('kpts_row')
+            if kval in kpts_row['data']: row_match = irow
+
+        for iring in range(1,nrings+1):
+            cmd = 'kpts_ring = EprocRingPts(' + """'""" + str(iring) + """'""" + ',geom)'
+            idl.execute(cmd)
+            kpts_ring = idl.get('kpts_ring')
+            if kval in kpts_ring['data']: ring_match = iring
+
+        # print(row_match, ring_match)
+        return row_match, ring_match
+
     def readtran_eproc_idl_temp(self):
 
         print('Getting data from ' + self.tranfile )
@@ -298,6 +336,7 @@ class ProcessEdgeSim:
         IDL_EprocGeom= idl.export_function("EprocGeom")
         self.geom = IDL_EprocGeom(self.tranfile)
         IDL_EprocDataRead= idl.export_function("EprocDataRead")
+        IDL_EprocRowPts= idl.export_function("EprocRowPts")
 
         self.rmesh = self.get_eproc_param_temp("EprocDataRead", 'RMESH')
 
@@ -306,6 +345,7 @@ class ProcessEdgeSim:
         self.rvertp = self.get_eproc_param_temp("EprocDataRead", 'RVERTP')
         self.zvertp = self.get_eproc_param_temp("EprocDataRead", 'ZVERTP')
         self.teve = self.get_eproc_param_temp("EprocDataRead", 'TEVE')
+        self.tev = self.get_eproc_param_temp("EprocDataRead", 'TEV')
         self.den = self.get_eproc_param_temp("EprocDataRead", 'DEN')
         self.denel = self.get_eproc_param_temp("EprocDataRead", 'DENEL')
         self.da = self.get_eproc_param_temp("EprocDataRead", 'DA')
@@ -315,6 +355,10 @@ class ProcessEdgeSim:
         self.soun = self.get_eproc_param_temp("EprocDataRead", 'SOUN')
 
         # GET INNER AND OUTER TARGET DATA
+        self.qeflxd_OT = self.get_eproc_param_temp("EprocRow", 'QEFLXD', 'OT', args='ALL_POINTS=0')
+        self.qeflxd_IT = self.get_eproc_param_temp("EprocRow", 'QEFLXD', 'IT', args='ALL_POINTS=0')
+        self.qiflxd_OT = self.get_eproc_param_temp("EprocRow", 'QIFLXD', 'OT', args='ALL_POINTS=0')
+        self.qiflxd_IT = self.get_eproc_param_temp("EprocRow", 'QIFLXD', 'IT', args='ALL_POINTS=0')
         self.pflxd_OT = self.get_eproc_param_temp("EprocRow", 'PFLXD', 'OT', args = 'ALL_POINTS=0')
         self.pflxd_IT = self.get_eproc_param_temp("EprocRow", 'PFLXD', 'IT', args = 'ALL_POINTS=0')
         self.teve_OT = self.get_eproc_param_temp("EprocRow", 'TEVE', 'OT', args = 'ALL_POINTS=0')
@@ -332,6 +376,7 @@ class ProcessEdgeSim:
 
         # GET MID-PLANE NE PROFILE
         self.ne_OMP = self.get_eproc_param_temp("EprocRow", 'DENEL', 'OMP', args = 'ALL_POINTS=0')
+        self.te_OMP = self.get_eproc_param_temp("EprocRow", 'TEVE', 'OMP', args = 'ALL_POINTS=0')
 
         # GET INNER AND OUTER QPARTOT AT Z=-1.2
         # FOR 81472 GEOM THIS CORRESPONDS TO ROWS 66 (IN) AND 26 (OUT)
@@ -389,9 +434,12 @@ class ProcessEdgeSim:
         self.cells = []
         self.patches = []
 
+        self.row = np.zeros((self.NE2Ddata), dtype=int)
+        self.ring = np.zeros((self.NE2Ddata), dtype=int)
         self.rv = np.zeros((self.NE2Ddata, 5))
         self.zv = np.zeros((self.NE2Ddata, 5))
         self.te = np.zeros((self.NE2Ddata))
+        self.ti = np.zeros((self.NE2Ddata))
         self.ne = np.zeros((self.NE2Ddata))
         self.ni = np.zeros((self.NE2Ddata))
         self.n0 = np.zeros((self.NE2Ddata))
@@ -399,7 +447,9 @@ class ProcessEdgeSim:
         self.sion = np.zeros((self.NE2Ddata))
         self.imp1_den = np.zeros((len(self.imp1_chrg_idx)+1,self.NE2Ddata))
         self.imp2_den = np.zeros((len(self.imp2_chrg_idx)+1,self.NE2Ddata))
+        geom_tmp = IDL_EprocGeom(self.tranfile)
         k = 0
+        ringct = 0
         for i in range(self.korpg['npts']):
             j = self.korpg['data'][i] - 1 # gotcha: convert from fortran indexing to idl/python
             if j >= 0:
@@ -407,11 +457,25 @@ class ProcessEdgeSim:
                 self.rv[k] = [self.rvertp['data'][j],  self.rvertp['data'][j+1], self.rvertp['data'][j+2], self.rvertp['data'][j+3], self.rvertp['data'][j]]
                 self.zv[k] = [self.zvertp['data'][j],  self.zvertp['data'][j+1], self.zvertp['data'][j+2], self.zvertp['data'][j+3], self.zvertp['data'][j]]
                 self.te[k] = self.teve['data'][i]
+                self.ti[k] = self.tev['data'][i]
                 self.ni[k] = self.den['data'][i]
                 self.ne[k] = self.denel['data'][i]
                 self.n0[k] = self.da['data'][i]
+                # Set parameters manually for debugging ( COMMENT OUT!)
+                # self.te[k] = self.teve['data'][i]*0.0 +10.
+                # self.ti[k] = self.tev['data'][i]*0.0 +10.
+                # self.ni[k] = self.den['data'][i]*0.0 +1.e20
+                # self.ne[k] = self.denel['data'][i]*0.0 +1.e20
+                # self.n0[k] = self.da['data'][i]*0.0 +1.e20
+
                 self.srec[k] = self.sirec['data'][i]
                 self.sion[k] = self.soun['data'][i]
+
+                # Determine row and ring number (very inefficient but works)
+                # self.row[k], self.ring[k] = self.get_eproc_row_ring_from_kval(k)
+                # if ringct != self.ring[k]:
+                #     print('Reading ring: ', self.ring[k])
+                #     ringct = self.ring[k]
 
                 if self.imp1_atom_num:
                     for ichrg in range(len(self.imp1_chrg_idx)+1):# +1 to include neutral density
@@ -426,6 +490,7 @@ class ProcessEdgeSim:
                 shply_poly = Polygon(poly.get_xy())
 
                 self.cells.append(Cell(self.rmesh['data'][i], self.zmesh['data'][i],
+                                       row=self.row[k], ring=self.ring[k],
                                        poly=shply_poly, te=self.te[k],
                                        ne=self.ne[k], ni=self.ni[k],
                                        n0=self.n0[k], Srec=self.srec[k], Sion=self.sion[k],
@@ -465,7 +530,7 @@ class ProcessEdgeSim:
             k+=1
         sep_points_below_xpt.append((self.geom['rpx'], self.geom['zpx']))
 
-        self.sep_poly = patches.Polygon(sep_points, closed=False, ec='w', linestyle='dashed', lw=2.0, fc='None', zorder=10)
+        self.sep_poly = patches.Polygon(sep_points, closed=False, ec='w', linestyle='solid', lw=2.0, fc='None', zorder=10)
         self.shply_sep_poly = Polygon(self.sep_poly.get_xy())
         self.sep_poly_below_xpt = patches.Polygon(sep_points_below_xpt, closed=False, ec='k', fc='None', zorder=10)
         self.shply_sep_poly_below_xpt = Polygon(self.sep_poly_below_xpt.get_xy())
@@ -551,6 +616,7 @@ class ProcessEdgeSim:
         # GET MID-PLANE NE PROFILE
         IDL_EprocRing= idl.export_function("EprocRing")
         self.ne_OMP = IDL_EprocRow(self.tranfile, 'DENEL', 'OMP', ALL_POINTS=0)
+        self.te_OMP = IDL_EprocRow(self.tranfile, 'TEVE', 'OMP', ALL_POINTS=0)
 
         # GET INNER AND OUTER QPARTOT AT Z=-1.2
         # FOR 81472 GEOM THIS CORRESPONDS TO ROWS 66 (IN) AND 26 (OUT)
@@ -749,14 +815,12 @@ class ProcessEdgeSim:
                     cell.H_emiss[line_key] = {'excit':E_excit, 'recom':E_recom, 'units':'ph.s^-1.m^-3.sr^-1'}
 
 
-    def calc_ff_fb_emiss(self, filter_wv_nm, filter_tran):
+    def calc_ff_fb_filtered_emiss(self, filter_wv_nm, filter_tran):
         # TODO: ADD ZEFF CAPABILITY
-        Te_rnge = [0.2, 5000]
-        ne_rnge = [1.0e11, 1.0e15]
 
         wave_nm = np.linspace(filter_wv_nm[0], filter_wv_nm[-1], 10)
 
-        print('Calculating FF+FB emission...')
+        print('Calculating FF+FB filtered emission...')
         for cell in self.cells:
             ff_only, ff_fb_tot = continuo_read.adas_continuo_py(wave_nm, cell.te, 1, 1)
             f = interp1d(wave_nm, ff_fb_tot)
@@ -767,8 +831,32 @@ class ProcessEdgeSim:
             ff_fb_tot_interp *= filter_tran
             # Integrate over wavelength
             ff_fb_tot_emiss = np.trapz(ff_fb_tot_interp, filter_wv_nm)
-            cell.ff_fb_emiss = {'ff_fb':ff_fb_tot_emiss, 'units':'ph.s^-1.m^-3.sr^-1',
+            cell.ff_fb_filtered_emiss = {'ff_fb':ff_fb_tot_emiss, 'units':'ph.s^-1.m^-3.sr^-1',
                                 'filter_wv_nm':filter_wv_nm, 'filter_tran':filter_tran}
+
+    def calc_ff_fb_emiss(self):
+        # TODO: ADD ZEFF !
+
+        wave_nm = np.logspace((0.001), np.log10(100000), 500)
+
+        print('Calculating FF+FB emission...')
+        sum_ff_radpwr = 0
+        for cell in self.cells:
+            ff_only, ff_fb = continuo_read.adas_continuo_py(wave_nm, cell.te, 1, 1, output_in_ph_s=False)
+            # convert to spectral emissivity (from W m^3 sr^-1 nm^-1 to W m^-3 nm^-1)
+            ff_only = ff_only * cell.ne * cell.ne * 4. * np.pi
+            ff_fb = ff_fb * cell.ne * cell.ne * 4. * np.pi
+
+            # Integrate over wavelength
+            cell.ff_radpwr_perm3 = np.trapz(ff_only, wave_nm) # W m^-3
+            cell.ff_fb_radpwr_perm3 = np.trapz(ff_fb, wave_nm) # W m^-3
+
+            cell_vol = cell.poly.area * 2.0 * np.pi * cell.R  # m^3
+            cell.ff_radpwr = cell.ff_radpwr_perm3 * cell_vol
+            cell.ff_fb_radpwr = cell.ff_fb_radpwr_perm3 * cell_vol
+
+            sum_ff_radpwr += cell.ff_radpwr
+        print('Total ff radiated power:', sum_ff_radpwr, ' [W]')
 
 
     def calc_H_rad_power(self):
@@ -780,13 +868,12 @@ class ProcessEdgeSim:
         for cell in self.cells:
             iTe, vTe = find_nearest(self.ADAS_dict['adf11']['1'].Te_arr, cell.te)
             ine, vne = find_nearest(self.ADAS_dict['adf11']['1'].ne_arr, cell.ne*1.0e-06)
-            # plt/prb absolute rad pow contr in units W
-            plt_contr = self.ADAS_dict['adf11']['1'].plt[iTe,ine]*(1.0e-06*cell.n0)*(1.0e-06*cell.ne)
-            prb_contr = self.ADAS_dict['adf11']['1'].prb[iTe,ine]*(1.0e-06*cell.ni)*(1.0e-06*cell.ne)
-            cell_vol = cell.poly.area * 2.0 * np.pi * cell.R # m^-3
-            plt_contr = plt_contr * 1.e06 * cell_vol # Watts
-            prb_contr = prb_contr * 1.e06 * cell_vol # Watts
-            cell.H_radpwr = plt_contr+prb_contr
+            # plt/prb absolute rad pow contr in units W.cm^3
+            plt_contr = self.ADAS_dict['adf11']['1'].plt[iTe,ine]*(1.0e-06*cell.n0)*(1.0e-06*cell.ne) #W.cm^-3
+            prb_contr = self.ADAS_dict['adf11']['1'].prb[iTe,ine]*(1.0e-06*cell.ni)*(1.0e-06*cell.ne) #W.cm^-3
+            cell_vol = cell.poly.area * 2.0 * np.pi * cell.R # m^3
+            cell.H_radpwr = (plt_contr+prb_contr) * 1.e06 * cell_vol # Watts
+            cell.H_radpwr_perm3 = (plt_contr+prb_contr) * 1.e06 # Watts m^-3
 
             sum_pwr += np.sum(np.asarray(cell.H_radpwr)) # sanity check. compare to eproc
         self.Prad_H = sum_pwr
@@ -840,29 +927,23 @@ class ProcessEdgeSim:
                                                                                    'fPEC_excit_ionbal':ion_frac_ionbal*PEC_excit, 'fPEC_recom_ionbal':ion_frac_parent_ionbal*PEC_recom}
 
     def calc_imp_rad_power(self):
-        Te_rnge = [0.2, 5000]
-        ne_rnge = [1.0e11, 1.0e15]
-        Te_arr = np.logspace(np.log10(Te_rnge[0]), np.log10(Te_rnge[1]), 500)
-        ne_arr = np.logspace(np.log10(ne_rnge[0]), np.log10(ne_rnge[1]), 30)
 
         e2d_imps = self.zch['data'][0:2]
         for e2d_imp_idx, e2d_at_num in enumerate(e2d_imps):
-            if e2d_imp_idx == 0: # impurity 1
+            if e2d_imp_idx == 0 and e2d_at_num > 0: # impurity 1
                 print('Calculating impurity (atomic num. =' , e2d_at_num, ') power...')
                 sum_pwr = 0
                 for cell in self.cells:
-                    iTe, vTe = find_nearest(Te_arr, cell.te)
-                    ine, vne = find_nearest(ne_arr, cell.ne*1.0e-06)
+                    iTe, vTe = find_nearest(self.ADAS_dict['adf11'][str(e2d_at_num)].Te_arr, cell.te)
+                    ine, vne = find_nearest(self.ADAS_dict['adf11'][str(e2d_at_num)].ne_arr, cell.ne*1.0e-06)
                     for ion_stage in range(e2d_at_num):
                         # plt/prb absolute rad pow contr in units W
                         plt_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].plt[iTe,ine,ion_stage]*(1.0e-06*cell.imp1_den[ion_stage])*(1.0e-06*cell.ne)
                         prb_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].prb[iTe,ine,ion_stage]*(1.0e-06*cell.imp1_den[ion_stage+1])*(1.0e-06*cell.ne)
                         prc_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].prc[iTe,ine,ion_stage]*(1.0e-06*cell.imp1_den[ion_stage+1])*(1.0e-06*cell.n0)
                         cell_vol = cell.poly.area * 2.0 * np.pi * cell.R # m^3
-                        plt_contr = plt_contr * 1.e06 * cell_vol # Watts
-                        prb_contr = prb_contr * 1.e06 * cell_vol # Watts
-                        prc_contr = prc_contr * 1.e06 * cell_vol # Watts
-                        cell.imp1_radpwr.append(plt_contr+prb_contr+prc_contr)
+                        cell.imp1_radpwr.append((plt_contr+prb_contr+prc_contr)*1.e06*cell_vol) # Watts
+                        cell.imp1_radpwr_perm3.append((plt_contr+prb_contr+prc_contr)*1.e06) # Watts m^-3
                         # plt/prb contr to rad loss coefficient in units W.m^3
                         ion_frac = cell.imp1_den[ion_stage] / np.sum(cell.imp1_den)
                         ion_frac_parent = cell.imp1_den[ion_stage+1] / np.sum(cell.imp1_den)
@@ -871,22 +952,23 @@ class ProcessEdgeSim:
                     sum_pwr += np.sum(np.asarray(cell.imp1_radpwr)) # sanity check. compare to eproc
                 print('Total power (atomic num. =' , e2d_at_num, '):', sum_pwr, ' [W]')
                 self.Prad_imp1 = sum_pwr
-            else: # impurity 2
+            elif e2d_imp_idx == 1 and e2d_at_num > 0: # impurity 2
                 print('Calculating impurity (atomic num. =' , e2d_at_num, ') power...')
                 sum_pwr = 0
                 for cell in self.cells:
-                    iTe, vTe = find_nearest(Te_arr, cell.te)
-                    ine, vne = find_nearest(ne_arr, cell.ne*1.0e-06)
+                    iTe, vTe = find_nearest(self.ADAS_dict['adf11'][str(e2d_at_num)].Te_arr, cell.te)
+                    ine, vne = find_nearest(self.ADAS_dict['adf11'][str(e2d_at_num)].ne_arr, cell.ne*1.0e-06)
                     for ion_stage in range(e2d_at_num):
                         # plt/prb_contr in units W.cm^-3
                         plt_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].plt[iTe,ine,ion_stage]*(1.0e-06*cell.imp2_den[ion_stage])*(1.0e-06*cell.ne)
+                        # if ion_stage > 0:
                         prb_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].prb[iTe,ine,ion_stage]*(1.0e-06*cell.imp2_den[ion_stage+1])*(1.0e-06*cell.ne)
+                        # else:
+                        #     prb_contr = 0.0
                         prc_contr = self.ADAS_dict['adf11'][str(e2d_at_num)].prc[iTe,ine,ion_stage]*(1.0e-06*cell.imp2_den[ion_stage+1])*(1.0e-06*cell.n0)
                         cell_vol = cell.poly.area * 2.0 * np.pi * cell.R # m^3
-                        plt_contr = plt_contr * 1.e06 * cell_vol # Watts
-                        prb_contr = prb_contr * 1.e06 * cell_vol # Watts
-                        prc_contr = prc_contr * 1.e06 * cell_vol # Watts
-                        cell.imp2_radpwr.append(plt_contr+prb_contr+prc_contr)
+                        cell.imp2_radpwr.append((plt_contr+prb_contr+prc_contr)*1.e06*cell_vol) #Watts
+                        cell.imp2_radpwr_perm3.append((plt_contr+prb_contr+prc_contr)*1.e06) #Watts m^-3
                         # plt/prb contr to rad loss coefficient in units W.m^3
                         ion_frac = cell.imp2_den[ion_stage] / np.sum(cell.imp2_den)
                         ion_frac_parent = cell.imp2_den[ion_stage+1] / np.sum(cell.imp2_den)
@@ -911,8 +993,15 @@ class ProcessEdgeSim:
                     clipped_cell.imp_emiss = cell.imp_emiss
                     area_ratio = clipped_cell.poly.area /  cell.poly.area
                     clipped_cell.H_radpwr = cell.H_radpwr * area_ratio
+                    clipped_cell.H_radpwr_perm3 = cell.H_radpwr_perm3
                     clipped_cell.imp1_radpwr = np.asarray(cell.imp1_radpwr) * area_ratio
+                    clipped_cell.imp1_radpwr_perm3 = cell.imp1_radpwr_perm3
                     clipped_cell.imp2_radpwr = np.asarray(cell.imp2_radpwr) * area_ratio
+                    clipped_cell.imp2_radpwr_perm3 = cell.imp2_radpwr_perm3
+                    clipped_cell.ff_radpwr = np.asarray(cell.ff_radpwr) * area_ratio
+                    clipped_cell.ff_radpwr_perm3 = cell.ff_radpwr_perm3
+                    clipped_cell.ff_fb_radpwr = np.asarray(cell.ff_fb_radpwr) * area_ratio
+                    clipped_cell.ff_fb_radpwr_perm3 = cell.ff_fb_radpwr_perm3
                     los.cells.append(clipped_cell)
 
         # Intersection of los centerline with separatrix: returns points where los crosses sep
@@ -944,6 +1033,9 @@ class ProcessEdgeSim:
         plt.show()
 
     def calc_qpol_div(self):
+
+        """ TODO: CHECK THIS PROCEDURE WITH DEREK/JAMES"""
+
         # LFS
         endidx = self.qpartot_LFS['npts']
         xidx, = np.where(self.qpartot_LFS['xdata'][0:endidx] > 0.0)
@@ -968,7 +1060,7 @@ class ProcessEdgeSim:
         xidx, = np.where(self.qpartot_HFS['xdata'][0:endidx] > 0.0)
         # CONVERT QPAR TO QPOL (QPOL = QPAR * Btheta/Btot)
         qpol_HFS = self.qpartot_HFS['ydata'][xidx] * self.bpol_btot_HFS['ydata'][xidx]
-        # calculate DR from neighbours
+        # calculate dR from neighbours
         dR_HFS = np.zeros((len(xidx)))
         for idx, val in enumerate(xidx):
             left_neighb = np.sqrt(((self.qpartot_HFS_rmesh['ydata'][val]-self.qpartot_HFS_rmesh['ydata'][val-1])**2)+
@@ -982,7 +1074,7 @@ class ProcessEdgeSim:
         area = 2. * np.pi * self.qpartot_HFS_rmesh['ydata'][xidx] * dR_HFS
         self.qpol_div_HFS = np.sum(qpol_HFS*area)
 
-        print('Pdiv_LFS (MW): ', self.qpol_div_LFS*1.e-06, 'Pdiv_HFS (MW): ', self.qpol_div_HFS*1.e-06, 'POWSOL (MW): ', self.powsol['data'][0]*1.e-06)
+        print('Pdiv_LFS (MW): ', self.qpol_div_LFS*1.e-06, 'Pdiv_HFS (MW): ', self.qpol_div_HFS*1.e-06, 'POWSOL (MW): ', self.powsol['data'][self.powsol['npts']-1]*1.e-06)
 
 
     def calc_region_aggregates(self):
@@ -1148,27 +1240,44 @@ class LOS:
         self.los_int['Srec'].update({'val':sum_Srec, 'units':'s^-1'})
         self.los_int['Sion'].update({'val':sum_Sion, 'units':'s^-1'})
 
-        # SUM RADIATED POWER
+        # SUM RADIATED POWER (total and per m^3)
         self.los_int['Prad'] = {}
+        self.los_int['Prad_perm2'] = {}
         sum_Prad_H = 0
+        sum_Prad_H_perm2 = 0
+        sum_Prad_ff = 0
+        sum_Prad_ff_perm2 = 0
         for cell in self.cells:
             sum_Prad_H += (cell.H_radpwr)
+            sum_Prad_H_perm2 += (cell.H_radpwr_perm3*cell.los_ortho_delL)
+            sum_Prad_ff += (cell.ff_radpwr)
+            sum_Prad_ff_perm2 += (cell.ff_radpwr_perm3*cell.los_ortho_delL)
         self.los_int['Prad'].update({'H':sum_Prad_H,  'units':'W'})
+        self.los_int['Prad_perm2'].update({'H':sum_Prad_H_perm2,  'units':'W m^-2'})
+        self.los_int['Prad'].update({'ff':sum_Prad_ff,  'units':'W'})
+        self.los_int['Prad_perm2'].update({'ff':sum_Prad_ff_perm2,  'units':'W m^-2'})
 
         if self.imp1_atom_num:
             sum_Prad_imp1 = np.zeros((self.imp1_atom_num))
+            sum_Prad_imp1_perm2 = np.zeros((self.imp1_atom_num))
             for cell in self.cells:
                 sum_Prad_imp1 += (cell.imp1_radpwr)
+                sum_Prad_imp1_perm2 += (np.asarray(cell.imp1_radpwr_perm3)*cell.los_ortho_delL)
             self.los_int['Prad'].update({'imp1':sum_Prad_imp1})
             self.los_int['Prad']['imp1'] = self.los_int['Prad']['imp1'].tolist()
+            self.los_int['Prad_perm2'].update({'imp1':sum_Prad_imp1_perm2})
+            self.los_int['Prad_perm2']['imp1'] = self.los_int['Prad_perm2']['imp1'].tolist()
 
         if self.imp2_atom_num:
             sum_Prad_imp2 = np.zeros((self.imp2_atom_num))
+            sum_Prad_imp2_perm2 = np.zeros((self.imp2_atom_num))
             for cell in self.cells:
                 sum_Prad_imp2 += (cell.imp2_radpwr)
+                sum_Prad_imp2_perm2 += (np.asarray(cell.imp2_radpwr_perm3)*cell.los_ortho_delL)
             self.los_int['Prad'].update({'imp2':sum_Prad_imp2})
             self.los_int['Prad']['imp2'] = self.los_int['Prad']['imp2'].tolist()
-
+            self.los_int['Prad_perm2'].update({'imp2': sum_Prad_imp2_perm2})
+            self.los_int['Prad_perm2']['imp2'] = self.los_int['Prad_perm2']['imp2'].tolist()
 
         ####################################################
         # COMPUTE AVERAGED QUANTITIES ALONG LOS
@@ -1752,10 +1861,14 @@ class SynthDiag:
 
 class Cell:
 
-    def __init__(self, R = None, Z = None, poly=None, te=None, ne=None, ni=None, n0=None, Srec=None, Sion=None, imp1_den=None, imp2_den=None):
+    def __init__(self, R=None, Z=None, row=None, ring=None,
+                 poly=None, te=None, ne=None, ni=None, n0=None,
+                 Srec=None, Sion=None, imp1_den=None, imp2_den=None):
 
         self.R = R # m
         self.Z = Z # m
+        self.row = row
+        self.ring = ring
         self.poly = poly
         self.te = te # eV
         self.ni = ni # m^-3
@@ -1764,12 +1877,19 @@ class Cell:
         self.imp1_den = imp1_den # m^-3
         self.imp2_den = imp2_den # m^-3
         self.imp1_radpwr = []
+        self.imp1_radpwr_perm3 = [] # W m^-3
         self.imp1_radpwr_coeff = [] # W m^3
         self.imp2_radpwr = []
+        self.imp2_radpwr_perm3 = [] # W m^-3
         self.imp2_radpwr_coeff = []  # W m^3
         self.H_emiss = {}
-        self.ff_fb_emiss = None
+        self.ff_fb_filtered_emiss = None
+        self.ff_radpwr = None
+        self.ff_radpwr_perm3 = None
+        self.ff_fb_radpwr = None
+        self.ff_fb_radpwr_perm3 = None
         self.H_radpwr = None
+        self.H_radpwr_perm3 = None  # W m^-3
         self.imp_emiss = {}
         self.Srec = Srec # m^-3 s^-1
         self.Sion = Sion # m^-3 s^-1

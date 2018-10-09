@@ -111,8 +111,8 @@ imp_line_blocks = {
         ###################################################
         # Use Stuart Henderson's latest PEC file for n1 as stage index -1
         {'-1': {'file': '/home/shenders/adas/adas/adf15/pec16#7/pec98#n_ssh_pju#n1.dat',
-               'blocks': {'3996.13excit': 15, '3996.13recom': 65,
-                          '4042.07excit': 21, '4042.07recom': 71}},
+                'blocks': {'3996.13excit': 15, '3996.13recom': 65,
+                           '4042.07excit': 21, '4042.07recom': 71}},
          ###################################################
          '2':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n1.dat',
               'blocks':{'5002.18excit': 17, '5002.18recom': 67,
@@ -126,7 +126,15 @@ imp_line_blocks = {
         {'1':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c0.dat',
               'blocks':{'9408.4excit':32, '9408.4recom':81}},
          '2':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c1.dat',
-              'blocks':{'6581.5excit':1, '6581.5recom':51}}}
+              'blocks':{'6581.5excit':1, '6581.5recom':51},
+              'blocks':{'5143.3excit':12, '5143.3recom':62}},
+         '3':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c2.dat',
+              'blocks':{'4650.1excit':2, '4650.1recom':52}},
+         '4':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_pju#c3.dat',
+               'blocks': {'1549.1excit': 14, '1549.1recom': 55}}},
+    '10':
+        {'2': {'file': '/home/adas/adas/adf15/pec96#ne/pec96#ne_pju#ne1.dat',
+               'blocks': {'3718.2excit': 17, '3718.2recom': 70}}}
 }
 
 line_blocks_lytrap = {
@@ -289,6 +297,12 @@ def get_imp_adf15_block(Te_arr, ne_arr, nuc_charge, ion_stage, block_key, adf15f
     # return 2D coeff(te, dens) in units ph s-1 cm3
     if lytrap:
         if block_key in line_blocks_lytrap[nuc_charge][ion_stage]['blocks']:
+            try:
+                f = open(adf15file)
+                f.close()
+            except FileNotFoundError:
+                print('File', adf15file, ' not found.')
+                raise
             print('Getting ADF15 data ', adf15file, nuc_charge, ion_stage, block_key, ' from read_adf15...')
             coeff, info = read_adf15(file=adf15file, block=line_blocks_lytrap[nuc_charge][ion_stage]['blocks'][block_key], te=Te_arr, dens=ne_arr, all=True)
             return coeff, info
@@ -296,6 +310,14 @@ def get_imp_adf15_block(Te_arr, ne_arr, nuc_charge, ion_stage, block_key, adf15f
             print(block_key, ' entry does not exist')
     else:
         if block_key in imp_line_blocks[nuc_charge][ion_stage]['blocks']:
+
+            # Read synth diag saved data
+            try:
+                f = open(adf15file)
+                f.close()
+            except FileNotFoundError:
+                print('File', adf15file, ' not found.')
+                raise
             print('Getting ADF15 data ', adf15file, nuc_charge, ion_stage, block_key, ' from read_adf15...')
             coeff, info = read_adf15(file=adf15file, block=imp_line_blocks[nuc_charge][ion_stage]['blocks'][block_key], te=Te_arr, dens=ne_arr, all=True)
             return coeff, info

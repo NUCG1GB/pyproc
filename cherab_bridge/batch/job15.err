@@ -1,0 +1,1190 @@
+Found input dictionary:  cherab_bridge_input_dict.json
+Found EDGE2D pickled data:  /work/bloman/pyproc/bloman_cmg_catalog_edge2d_jet_81472_may0618_seq#1/pyproc.2ddata.pkl
+Found synthetic diagnostic data file:  /work/bloman/pyproc/bloman_cmg_catalog_edge2d_jet_81472_may0618_seq#1/pyproc.proc_synth_diag.json
+Found synthetic diagnostic processed data file:  /work/bloman/pyproc/bloman_cmg_catalog_edge2d_jet_81472_may0618_seq#1/pyproc.proc_synth_diag.json
+ADAS dictionary restored.
+importing A2_Antennas.rsm  ...
+importing B_C_tiles.rsm  ...
+importing DP_Tiles.rsm  ...
+importing GB_Carrier_Tiles.rsm  ...
+importing High Field Gap_Tiles.rsm  ...
+importing ICRD.rsm  ...
+importing ICRH_PL_Tiles.rsm  ...
+importing IL_SC.rsm  ...
+importing IWGL_Tiles.rsm  ...
+importing IWP_tiles.rsm  ...
+importing LBSRP_Tiles.rsm  ...
+importing LHCD.rsm  ...
+importing LO_SC.rsm  ...
+importing Lost_Apha.rsm  ...
+importing Mushroom_Tiles.rsm  ...
+importing PL_tiles.rsm  ...
+importing TAE.rsm  ...
+importing UIWP_tiles.rsm  ...
+importing UO_SC.rsm  ...
+importing B_C_Structure.rsm  ...
+importing Coil_Conduit.rsm  ...
+importing Cooling_Manifold.rsm  ...
+importing Diagnostics.rsm  ...
+importing DP_Structure.rsm  ...
+importing DS.rsm  ...
+importing ICRH_PL_Structure.rsm  ...
+importing IWGL_Structure.rsm  ...
+importing IWP_structure.rsm  ...
+importing KE14.rsm  ...
+importing LHCD_Structure.rsm  ...
+importing Mushroom_Structure.rsm  ...
+importing Oct4_Glow_Discharge.rsm  ...
+importing PL_Structure.rsm  ...
+importing SC_Feeds.rsm  ...
+importing SC_Xover.rsm  ...
+importing Vessel Wall.rsm  ...
+Warning! No magnetic field data available for this simulation.
+Warning! No velocity field data available for this simulation.
+<EDGE2D Plasma: Plasma at 0x7fc2ab813348>
+KT3 [2.76503, -1.65785]
+Render time: 43.560s (25.00% complete, 1.8k rays)
+Render time: 46.493s (50.00% complete, 1.9k rays)
+Render time: 50.355s (100.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.2408 +/- 0.003892 W/str/m^2
+Render complete - time elapsed 50.356s - 0.1k rays/s
+Render time: 44.377s (25.00% complete, 1.8k rays)
+Render time: 47.983s (75.00% complete, 3.7k rays)
+Render time: 49.903s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 1.193 +/- 0.01531 W/str/m^2
+Render complete - time elapsed 49.904s - 0.1k rays/s
+Render time: 90.740s (25.00% complete, 1.8k rays)
+Render time: 96.089s (50.00% complete, 1.8k rays)
+Render time: 101.249s (75.00% complete, 1.8k rays)
+Render time: 109.873s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 1.422 +/- 0.01204 W/str/m^2
+Render complete - time elapsed 109.873s - 0.1k rays/s
+Render time: 43.091s (25.00% complete, 1.7k rays)
+Render time: 46.572s (50.00% complete, 1.9k rays)
+Render time: 49.708s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 111.9 +/- 1.98 W/str/m^2
+Render complete - time elapsed 49.709s - 0.1k rays/s
+Render time: 43.640s (25.00% complete, 1.7k rays)
+Render time: 47.799s (75.00% complete, 3.9k rays)
+Render time: 52.161s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 12.75 +/- 0.1799 W/str/m^2
+Render complete - time elapsed 52.162s - 0.1k rays/s
+Render time: 43.977s (25.00% complete, 1.9k rays)
+Render time: 46.240s (75.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.05754 +/- 0.0009579 W/str/m^2
+Render complete - time elapsed 46.566s - 0.2k rays/s
+Render time: 41.607s (25.00% complete, 1.7k rays)
+Render time: 47.787s (100.00% complete, 5.4k rays)
+Radiance Pipeline - incident radiance: 0.7098 +/- 0.00884 W/str/m^2
+Render complete - time elapsed 47.787s - 0.1k rays/s
+Render time: 22.908s (25.00% complete, 1.9k rays)
+Render time: 25.018s (100.00% complete, 5.7k rays)
+Radiance Pipeline - incident radiance: 2.695E+04 +/- 479.1 W/str/m^2
+Render complete - time elapsed 25.019s - 0.3k rays/s
+Render time: 22.480s (25.00% complete, 1.8k rays)
+Render time: 24.854s (100.00% complete, 5.4k rays)
+Radiance Pipeline - incident radiance: 215.2 +/- 2.922 W/str/m^2
+Render complete - time elapsed 24.857s - 0.3k rays/s
+Render time: 1662.726s (25.00% complete, 1.8k rays)
+Render time: 1699.578s (50.00% complete, 1.9k rays)
+Render time: 1739.322s (75.00% complete, 1.9k rays)
+Render time: 1742.120s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 10.53 +/- 0.07865 W/str/m^2
+Render complete - time elapsed 1742.121s - 0.0k rays/s
+KT3 [2.85312, -1.68381]
+Render time: 44.309s (25.00% complete, 1.8k rays)
+Render time: 46.536s (50.00% complete, 1.9k rays)
+Render time: 47.709s (100.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.0793 +/- 0.001066 W/str/m^2
+Render complete - time elapsed 47.710s - 0.2k rays/s
+Render time: 44.145s (25.00% complete, 1.8k rays)
+Render time: 45.678s (50.00% complete, 1.9k rays)
+Render time: 49.860s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 1.103 +/- 0.01759 W/str/m^2
+Render complete - time elapsed 49.861s - 0.2k rays/s
+Render time: 89.248s (25.00% complete, 2.0k rays)
+Render time: 94.813s (75.00% complete, 3.9k rays)
+Render time: 103.033s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 1.181 +/- 0.01758 W/str/m^2
+Render complete - time elapsed 103.034s - 0.1k rays/s
+Render time: 46.035s (25.00% complete, 1.9k rays)
+Render time: 48.563s (100.00% complete, 5.8k rays)
+Radiance Pipeline - incident radiance: 27.18 +/- 0.5638 W/str/m^2
+Render complete - time elapsed 48.564s - 0.2k rays/s
+Render time: 46.081s (25.00% complete, 1.8k rays)
+Render time: 47.792s (75.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 15.78 +/- 0.2517 W/str/m^2
+Render complete - time elapsed 47.917s - 0.2k rays/s
+Render time: 45.138s (25.00% complete, 1.9k rays)
+Render time: 47.589s (75.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.02 +/- 0.0002607 W/str/m^2
+Render complete - time elapsed 47.803s - 0.2k rays/s
+Render time: 44.836s (25.00% complete, 1.7k rays)
+Render time: 47.403s (50.00% complete, 1.9k rays)
+Render time: 51.360s (75.00% complete, 2.0k rays)
+Render time: 52.412s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 0.6276 +/- 0.009715 W/str/m^2
+Render complete - time elapsed 52.413s - 0.1k rays/s
+Render time: 24.228s (25.00% complete, 1.9k rays)
+Render time: 25.772s (50.00% complete, 1.9k rays)
+Render time: 26.873s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 3385 +/- 106.3 W/str/m^2
+Render complete - time elapsed 26.874s - 0.3k rays/s
+Render time: 23.782s (25.00% complete, 1.8k rays)
+Render time: 24.811s (75.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 189.5 +/- 3.071 W/str/m^2
+Render complete - time elapsed 25.122s - 0.3k rays/s
+Render time: 1611.382s (25.00% complete, 1.8k rays)
+Render time: 1699.100s (50.00% complete, 2.0k rays)
+Render time: 1760.650s (75.00% complete, 2.0k rays)
+Render time: 1773.566s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 3.743 +/- 0.06496 W/str/m^2
+Render complete - time elapsed 1773.567s - 0.0k rays/s
+KT3 [2.83551, -1.67862]
+Render time: 41.881s (25.00% complete, 1.7k rays)
+Render time: 46.219s (50.00% complete, 1.8k rays)
+Render time: 47.825s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.08209 +/- 0.0007659 W/str/m^2
+Render complete - time elapsed 47.926s - 0.2k rays/s
+Render time: 43.370s (25.00% complete, 1.9k rays)
+Render time: 46.235s (50.00% complete, 1.9k rays)
+Render time: 47.466s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 1.604 +/- 0.01285 W/str/m^2
+Render complete - time elapsed 48.411s - 0.2k rays/s
+Render time: 94.470s (25.00% complete, 2.0k rays)
+Render time: 98.708s (50.00% complete, 1.9k rays)
+Render time: 100.639s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 1.701 +/- 0.01324 W/str/m^2
+Render complete - time elapsed 100.640s - 0.1k rays/s
+Render time: 46.342s (25.00% complete, 1.9k rays)
+Render time: 49.026s (75.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 27.74 +/- 0.3484 W/str/m^2
+Render complete - time elapsed 49.100s - 0.2k rays/s
+Render time: 44.418s (25.00% complete, 1.8k rays)
+Render time: 46.261s (50.00% complete, 1.9k rays)
+Render time: 47.879s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 23.27 +/- 0.1833 W/str/m^2
+Render complete - time elapsed 48.556s - 0.2k rays/s
+Render time: 44.176s (25.00% complete, 1.9k rays)
+Render time: 45.386s (50.00% complete, 1.8k rays)
+Render time: 46.517s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.02051 +/- 0.0001884 W/str/m^2
+Render complete - time elapsed 46.518s - 0.2k rays/s
+Render time: 43.364s (25.00% complete, 1.7k rays)
+Render time: 44.836s (75.00% complete, 3.7k rays)
+Render time: 48.913s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 0.8938 +/- 0.007226 W/str/m^2
+Render complete - time elapsed 48.913s - 0.2k rays/s
+Render time: 23.453s (25.00% complete, 1.8k rays)
+Render time: 24.743s (50.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 3149 +/- 61.04 W/str/m^2
+Render complete - time elapsed 25.708s - 0.3k rays/s
+Render time: 23.971s (25.00% complete, 2.0k rays)
+Render time: 25.162s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 287.6 +/- 2.421 W/str/m^2
+Render complete - time elapsed 25.344s - 0.3k rays/s
+Render time: 1725.829s (25.00% complete, 1.9k rays)
+Render time: 1748.491s (50.00% complete, 2.0k rays)
+Render time: 1781.038s (75.00% complete, 2.0k rays)
+Render time: 1875.931s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 5.803 +/- 0.05963 W/str/m^2
+Render complete - time elapsed 1875.934s - 0.0k rays/s
+KT3 [2.9236, -1.70457]
+Render time: 44.976s (25.00% complete, 1.7k rays)
+Render time: 47.794s (50.00% complete, 1.9k rays)
+Render time: 49.468s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.06566 +/- 0.001242 W/str/m^2
+Render complete - time elapsed 49.469s - 0.2k rays/s
+Render time: 43.744s (25.00% complete, 1.8k rays)
+Render time: 46.475s (50.00% complete, 2.0k rays)
+Render time: 48.919s (100.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.02456 +/- 0.002445 W/str/m^2
+Render complete - time elapsed 48.920s - 0.2k rays/s
+Render time: 76.329s (25.00% complete, 1.9k rays)
+Render time: 79.746s (75.00% complete, 3.8k rays)
+Render time: 85.715s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.0915 +/- 0.00356 W/str/m^2
+Render complete - time elapsed 85.716s - 0.1k rays/s
+Render time: 40.787s (25.00% complete, 1.8k rays)
+Render time: 42.072s (50.00% complete, 1.7k rays)
+Render time: 46.445s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 19.93 +/- 0.4989 W/str/m^2
+Render complete - time elapsed 47.028s - 0.2k rays/s
+Render time: 41.576s (25.00% complete, 1.8k rays)
+Render time: 43.761s (50.00% complete, 1.9k rays)
+Render time: 47.007s (75.00% complete, 1.9k rays)
+Render time: 50.669s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.2572 +/- 0.02988 W/str/m^2
+Render complete - time elapsed 50.670s - 0.1k rays/s
+Render time: 40.447s (25.00% complete, 1.7k rays)
+Render time: 43.137s (75.00% complete, 3.6k rays)
+Render time: 44.609s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.01627 +/- 0.0003117 W/str/m^2
+Render complete - time elapsed 44.609s - 0.2k rays/s
+Render time: 43.530s (25.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.01182 +/- 0.001106 W/str/m^2
+Render complete - time elapsed 44.130s - 0.2k rays/s
+Render time: 22.725s (25.00% complete, 1.8k rays)
+Render time: 23.874s (75.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 2375 +/- 87.68 W/str/m^2
+Render complete - time elapsed 23.895s - 0.3k rays/s
+Render time: 24.125s (25.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 3.833 +/- 0.3821 W/str/m^2
+Render complete - time elapsed 24.987s - 0.3k rays/s
+Render time: 1482.776s (25.00% complete, 1.9k rays)
+Render time: 1533.076s (50.00% complete, 1.8k rays)
+Render time: 1563.157s (75.00% complete, 2.0k rays)
+Render time: 1579.439s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.5991 +/- 0.02238 W/str/m^2
+Render complete - time elapsed 1579.440s - 0.0k rays/s
+KT3 [2.6417, -1.62152]
+Render time: 49.063s (25.00% complete, 1.8k rays)
+Render time: 51.012s (75.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.05894 +/- 0.001247 W/str/m^2
+Render complete - time elapsed 51.195s - 0.1k rays/s
+Render time: 51.748s (25.00% complete, 1.9k rays)
+Render time: 54.306s (75.00% complete, 4.0k rays)
+Render time: 55.937s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.04436 +/- 0.001838 W/str/m^2
+Render complete - time elapsed 55.938s - 0.1k rays/s
+Render time: 93.938s (25.00% complete, 1.9k rays)
+Render time: 96.128s (50.00% complete, 2.0k rays)
+Render time: 99.685s (100.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 0.106 +/- 0.002622 W/str/m^2
+Render complete - time elapsed 99.686s - 0.1k rays/s
+Render time: 52.712s (25.00% complete, 1.9k rays)
+Render time: 56.509s (75.00% complete, 4.1k rays)
+Radiance Pipeline - incident radiance: 22.8 +/- 0.4899 W/str/m^2
+Render complete - time elapsed 57.284s - 0.1k rays/s
+Render time: 48.441s (25.00% complete, 1.8k rays)
+Render time: 49.678s (50.00% complete, 1.9k rays)
+Render time: 51.065s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.4231 +/- 0.02375 W/str/m^2
+Render complete - time elapsed 51.066s - 0.1k rays/s
+Render time: 47.511s (25.00% complete, 1.9k rays)
+Render time: 50.181s (50.00% complete, 2.0k rays)
+Render time: 52.001s (100.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 0.01535 +/- 0.0003229 W/str/m^2
+Render complete - time elapsed 52.002s - 0.2k rays/s
+Render time: 48.129s (25.00% complete, 1.9k rays)
+Render time: 49.472s (50.00% complete, 1.8k rays)
+Render time: 52.333s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.02707 +/- 0.0009928 W/str/m^2
+Render complete - time elapsed 52.333s - 0.1k rays/s
+Render time: 25.614s (25.00% complete, 1.9k rays)
+Render time: 26.901s (50.00% complete, 1.9k rays)
+Render time: 28.295s (100.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 3191 +/- 62.83 W/str/m^2
+Render complete - time elapsed 28.296s - 0.3k rays/s
+Render time: 26.485s (25.00% complete, 2.0k rays)
+Render time: 27.757s (100.00% complete, 5.9k rays)
+Radiance Pipeline - incident radiance: 6.695 +/- 0.2914 W/str/m^2
+Render complete - time elapsed 27.757s - 0.3k rays/s
+Render time: 1711.460s (25.00% complete, 1.9k rays)
+Render time: 1730.196s (50.00% complete, 2.0k rays)
+Render time: 1757.081s (75.00% complete, 2.0k rays)
+Render time: 1822.337s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 1.281 +/- 0.01643 W/str/m^2
+Render complete - time elapsed 1822.338s - 0.0k rays/s
+KT3 [2.62408, -1.61633]
+Render time: 47.845s (25.00% complete, 2.0k rays)
+Render time: 50.979s (75.00% complete, 3.8k rays)
+Render time: 53.301s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.05492 +/- 0.001082 W/str/m^2
+Render complete - time elapsed 53.302s - 0.1k rays/s
+Render time: 48.404s (25.00% complete, 1.8k rays)
+Render time: 53.165s (75.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 0.0555 +/- 0.001422 W/str/m^2
+Render complete - time elapsed 53.882s - 0.1k rays/s
+Render time: 83.504s (25.00% complete, 1.9k rays)
+Render time: 84.687s (50.00% complete, 1.8k rays)
+Render time: 87.260s (75.00% complete, 2.0k rays)
+Render time: 91.297s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.1122 +/- 0.002088 W/str/m^2
+Render complete - time elapsed 91.298s - 0.1k rays/s
+Render time: 47.174s (25.00% complete, 1.9k rays)
+Render time: 50.347s (50.00% complete, 1.9k rays)
+Render time: 51.757s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 20.94 +/- 0.4227 W/str/m^2
+Render complete - time elapsed 51.758s - 0.1k rays/s
+Render time: 49.085s (25.00% complete, 1.8k rays)
+Render time: 50.324s (50.00% complete, 1.9k rays)
+Render time: 52.025s (75.00% complete, 2.0k rays)
+Render time: 55.225s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.5069 +/- 0.02235 W/str/m^2
+Render complete - time elapsed 55.225s - 0.1k rays/s
+Render time: 49.655s (25.00% complete, 1.9k rays)
+Render time: 50.912s (100.00% complete, 5.8k rays)
+Radiance Pipeline - incident radiance: 0.0144 +/- 0.0002992 W/str/m^2
+Render complete - time elapsed 50.913s - 0.2k rays/s
+Render time: 51.043s (25.00% complete, 1.9k rays)
+Render time: 53.603s (50.00% complete, 2.1k rays)
+Render time: 55.463s (75.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.03622 +/- 0.001073 W/str/m^2
+Render complete - time elapsed 55.690s - 0.1k rays/s
+Render time: 25.487s (25.00% complete, 1.9k rays)
+Render time: 26.683s (75.00% complete, 3.7k rays)
+Render time: 28.205s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 3154 +/- 54.49 W/str/m^2
+Render complete - time elapsed 28.206s - 0.3k rays/s
+Render time: 26.501s (25.00% complete, 1.8k rays)
+Render time: 27.704s (100.00% complete, 6.0k rays)
+Radiance Pipeline - incident radiance: 8.076 +/- 0.3003 W/str/m^2
+Render complete - time elapsed 27.705s - 0.3k rays/s
+Render time: 1743.712s (25.00% complete, 2.1k rays)
+Render time: 1773.129s (50.00% complete, 1.9k rays)
+Render time: 1782.758s (75.00% complete, 1.9k rays)
+Render time: 1822.738s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 1.421 +/- 0.01613 W/str/m^2
+Render complete - time elapsed 1822.738s - 0.0k rays/s
+KT3 [2.65932, -1.62671]
+Render time: 49.196s (25.00% complete, 1.8k rays)
+Render time: 51.595s (75.00% complete, 3.8k rays)
+Render time: 57.311s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.06666 +/- 0.001385 W/str/m^2
+Render complete - time elapsed 57.312s - 0.1k rays/s
+Render time: 51.986s (25.00% complete, 2.0k rays)
+Render time: 54.081s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.04256 +/- 0.002147 W/str/m^2
+Render complete - time elapsed 54.185s - 0.1k rays/s
+Render time: 85.116s (25.00% complete, 1.8k rays)
+Render time: 96.984s (50.00% complete, 1.9k rays)
+Render time: 98.824s (75.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.1121 +/- 0.002989 W/str/m^2
+Render complete - time elapsed 99.533s - 0.1k rays/s
+Render time: 50.181s (25.00% complete, 1.9k rays)
+Render time: 52.173s (75.00% complete, 3.9k rays)
+Render time: 56.652s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 24.68 +/- 0.513 W/str/m^2
+Render complete - time elapsed 56.653s - 0.1k rays/s
+Render time: 52.629s (25.00% complete, 1.9k rays)
+Render time: 54.439s (75.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.396 +/- 0.02632 W/str/m^2
+Render complete - time elapsed 55.428s - 0.1k rays/s
+Render time: 49.253s (25.00% complete, 1.9k rays)
+Render time: 50.595s (50.00% complete, 1.9k rays)
+Render time: 53.641s (100.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.01723 +/- 0.0003556 W/str/m^2
+Render complete - time elapsed 53.642s - 0.1k rays/s
+Render time: 49.672s (25.00% complete, 1.8k rays)
+Render time: 54.257s (50.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.02326 +/- 0.001109 W/str/m^2
+Render complete - time elapsed 54.877s - 0.1k rays/s
+Render time: 25.884s (25.00% complete, 1.7k rays)
+Render time: 27.433s (100.00% complete, 5.7k rays)
+Radiance Pipeline - incident radiance: 3494 +/- 77.34 W/str/m^2
+Render complete - time elapsed 27.434s - 0.3k rays/s
+Render time: 25.674s (25.00% complete, 1.9k rays)
+Render time: 27.875s (50.00% complete, 2.1k rays)
+Render time: 30.424s (100.00% complete, 4.2k rays)
+Radiance Pipeline - incident radiance: 6.267 +/- 0.3527 W/str/m^2
+Render complete - time elapsed 30.424s - 0.3k rays/s
+Render time: 1679.652s (25.00% complete, 1.7k rays)
+Render time: 1794.021s (50.00% complete, 2.0k rays)
+Render time: 1799.245s (75.00% complete, 2.0k rays)
+Render time: 1805.993s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 1.201 +/- 0.01615 W/str/m^2
+Render complete - time elapsed 1805.994s - 0.0k rays/s
+KT3 [2.67694, -1.6319]
+Render time: 49.280s (25.00% complete, 1.7k rays)
+Render time: 53.069s (75.00% complete, 3.7k rays)
+Render time: 56.477s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.0826 +/- 0.001496 W/str/m^2
+Render complete - time elapsed 56.478s - 0.1k rays/s
+Render time: 47.730s (25.00% complete, 1.8k rays)
+Render time: 50.871s (50.00% complete, 1.9k rays)
+Render time: 51.932s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.04603 +/- 0.002143 W/str/m^2
+Render complete - time elapsed 52.541s - 0.1k rays/s
+Render time: 89.813s (25.00% complete, 2.1k rays)
+Render time: 92.741s (50.00% complete, 2.0k rays)
+Render time: 96.482s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.1334 +/- 0.002884 W/str/m^2
+Render complete - time elapsed 97.187s - 0.1k rays/s
+Render time: 50.219s (25.00% complete, 1.9k rays)
+Render time: 52.004s (100.00% complete, 5.6k rays)
+Radiance Pipeline - incident radiance: 31.63 +/- 0.5994 W/str/m^2
+Render complete - time elapsed 52.005s - 0.1k rays/s
+Render time: 52.987s (25.00% complete, 2.0k rays)
+Render time: 54.620s (100.00% complete, 5.9k rays)
+Radiance Pipeline - incident radiance: 0.4793 +/- 0.02879 W/str/m^2
+Render complete - time elapsed 54.621s - 0.1k rays/s
+Render time: 45.404s (25.00% complete, 1.8k rays)
+Render time: 48.633s (50.00% complete, 1.9k rays)
+Render time: 50.640s (75.00% complete, 1.9k rays)
+Render time: 51.936s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.02151 +/- 0.0003839 W/str/m^2
+Render complete - time elapsed 51.937s - 0.1k rays/s
+Render time: 49.382s (25.00% complete, 2.0k rays)
+Render time: 51.575s (50.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.02899 +/- 0.001344 W/str/m^2
+Render complete - time elapsed 52.358s - 0.2k rays/s
+Render time: 24.771s (25.00% complete, 1.9k rays)
+Render time: 26.586s (75.00% complete, 3.7k rays)
+Render time: 28.408s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 4402 +/- 85.46 W/str/m^2
+Render complete - time elapsed 28.409s - 0.3k rays/s
+Render time: 25.534s (25.00% complete, 1.9k rays)
+Render time: 27.638s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 7.521 +/- 0.4025 W/str/m^2
+Render complete - time elapsed 27.826s - 0.3k rays/s
+Render time: 1630.925s (25.00% complete, 1.9k rays)
+Render time: 1634.575s (50.00% complete, 1.9k rays)
+Render time: 1719.117s (75.00% complete, 2.0k rays)
+Render time: 1788.506s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 1.319 +/- 0.02041 W/str/m^2
+Render complete - time elapsed 1788.506s - 0.0k rays/s
+KT3 [2.81789, -1.67343]
+Render time: 37.209s (25.00% complete, 1.8k rays)
+Render time: 38.828s (50.00% complete, 1.8k rays)
+Render time: 43.314s (100.00% complete, 3.5k rays)
+Radiance Pipeline - incident radiance: 0.08412 +/- 0.0007482 W/str/m^2
+Render complete - time elapsed 43.315s - 0.2k rays/s
+Render time: 40.332s (25.00% complete, 1.7k rays)
+Render time: 41.642s (75.00% complete, 3.6k rays)
+Render time: 42.815s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 1.486 +/- 0.0128 W/str/m^2
+Render complete - time elapsed 42.817s - 0.2k rays/s
+Render time: 81.080s (25.00% complete, 1.8k rays)
+Render time: 82.165s (50.00% complete, 1.7k rays)
+Render time: 83.254s (75.00% complete, 1.8k rays)
+Render time: 85.497s (100.00% complete, 1.7k rays)
+Radiance Pipeline - incident radiance: 1.564 +/- 0.01311 W/str/m^2
+Render complete - time elapsed 85.499s - 0.1k rays/s
+Render time: 37.419s (25.00% complete, 1.7k rays)
+Render time: 38.762s (50.00% complete, 1.8k rays)
+Render time: 43.149s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 29.5 +/- 0.3582 W/str/m^2
+Render complete - time elapsed 43.150s - 0.2k rays/s
+Render time: 43.347s (25.00% complete, 1.9k rays)
+Render time: 45.782s (100.00% complete, 5.6k rays)
+Radiance Pipeline - incident radiance: 19.95 +/- 0.2128 W/str/m^2
+Render complete - time elapsed 45.783s - 0.2k rays/s
+Render time: 36.777s (25.00% complete, 1.7k rays)
+Render time: 40.460s (50.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.02138 +/- 0.0002021 W/str/m^2
+Render complete - time elapsed 41.234s - 0.2k rays/s
+Render time: 39.673s (25.00% complete, 1.8k rays)
+Render time: 41.022s (100.00% complete, 5.5k rays)
+Radiance Pipeline - incident radiance: 0.8477 +/- 0.006757 W/str/m^2
+Render complete - time elapsed 41.022s - 0.2k rays/s
+Render time: 21.145s (25.00% complete, 1.8k rays)
+Render time: 22.596s (100.00% complete, 5.6k rays)
+Radiance Pipeline - incident radiance: 3650 +/- 77.61 W/str/m^2
+Render complete - time elapsed 22.597s - 0.3k rays/s
+Render time: 21.159s (25.00% complete, 1.9k rays)
+Render time: 22.236s (75.00% complete, 3.6k rays)
+Render time: 23.809s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 257.4 +/- 2.64 W/str/m^2
+Render complete - time elapsed 23.810s - 0.3k rays/s
+Render time: 1587.037s (25.00% complete, 1.9k rays)
+Render time: 1600.893s (50.00% complete, 1.7k rays)
+Render time: 1630.195s (75.00% complete, 1.7k rays)
+Render time: 1658.066s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 6.568 +/- 0.05145 W/str/m^2
+Render complete - time elapsed 1658.067s - 0.0k rays/s
+KT3 [2.74741, -1.65266]
+Render time: 41.542s (25.00% complete, 1.6k rays)
+Render time: 45.869s (50.00% complete, 2.0k rays)
+Render time: 48.632s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.3963 +/- 0.003218 W/str/m^2
+Render complete - time elapsed 48.633s - 0.2k rays/s
+Render time: 43.304s (25.00% complete, 1.8k rays)
+Render time: 45.681s (50.00% complete, 1.9k rays)
+Render time: 48.170s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.5068 +/- 0.01187 W/str/m^2
+Render complete - time elapsed 48.171s - 0.2k rays/s
+Render time: 90.033s (25.00% complete, 1.7k rays)
+Render time: 97.070s (50.00% complete, 1.9k rays)
+Render time: 98.923s (75.00% complete, 1.9k rays)
+Render time: 104.450s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 0.9115 +/- 0.01129 W/str/m^2
+Render complete - time elapsed 104.450s - 0.1k rays/s
+Render time: 46.126s (25.00% complete, 1.9k rays)
+Render time: 51.213s (100.00% complete, 5.7k rays)
+Radiance Pipeline - incident radiance: 181.7 +/- 1.544 W/str/m^2
+Render complete - time elapsed 51.214s - 0.1k rays/s
+Render time: 41.144s (25.00% complete, 1.6k rays)
+Render time: 44.581s (50.00% complete, 2.0k rays)
+Render time: 47.797s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 4.875 +/- 0.1275 W/str/m^2
+Render complete - time elapsed 48.393s - 0.2k rays/s
+Render time: 44.963s (25.00% complete, 2.0k rays)
+Render time: 48.050s (50.00% complete, 2.1k rays)
+Render time: 50.136s (75.00% complete, 2.1k rays)
+Render time: 51.203s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.09692 +/- 0.0008202 W/str/m^2
+Render complete - time elapsed 51.204s - 0.2k rays/s
+Render time: 46.035s (25.00% complete, 1.8k rays)
+Render time: 47.312s (50.00% complete, 2.1k rays)
+Render time: 49.643s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.2946 +/- 0.006742 W/str/m^2
+Render complete - time elapsed 49.643s - 0.2k rays/s
+Render time: 22.613s (25.00% complete, 1.9k rays)
+Render time: 23.746s (75.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 3.822E+04 +/- 353.9 W/str/m^2
+Render complete - time elapsed 24.324s - 0.3k rays/s
+Render time: 23.398s (25.00% complete, 1.8k rays)
+Render time: 25.379s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 84.4 +/- 2.215 W/str/m^2
+Render complete - time elapsed 26.046s - 0.3k rays/s
+Render time: 1597.103s (25.00% complete, 1.7k rays)
+Render time: 1703.531s (50.00% complete, 1.9k rays)
+Render time: 1720.211s (75.00% complete, 1.8k rays)
+Render time: 1885.334s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 6.632 +/- 0.091 W/str/m^2
+Render complete - time elapsed 1885.335s - 0.0k rays/s
+KT3 [2.80027, -1.66823]
+Render time: 40.799s (25.00% complete, 1.8k rays)
+Render time: 42.062s (75.00% complete, 3.7k rays)
+Render time: 46.566s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.09523 +/- 0.0009392 W/str/m^2
+Render complete - time elapsed 46.567s - 0.2k rays/s
+Render time: 40.513s (25.00% complete, 1.8k rays)
+Render time: 43.518s (50.00% complete, 1.8k rays)
+Render time: 45.657s (100.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 1.39 +/- 0.009886 W/str/m^2
+Render complete - time elapsed 45.657s - 0.2k rays/s
+Render time: 90.569s (25.00% complete, 1.9k rays)
+Render time: 92.813s (75.00% complete, 3.5k rays)
+Render time: 95.501s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 1.471 +/- 0.009804 W/str/m^2
+Render complete - time elapsed 95.501s - 0.1k rays/s
+Render time: 40.995s (25.00% complete, 1.7k rays)
+Render time: 42.196s (50.00% complete, 1.9k rays)
+Render time: 43.651s (75.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 34.45 +/- 0.3987 W/str/m^2
+Render complete - time elapsed 44.137s - 0.2k rays/s
+Render time: 42.215s (25.00% complete, 1.7k rays)
+Render time: 46.702s (75.00% complete, 3.9k rays)
+Render time: 48.116s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 16.53 +/- 0.1289 W/str/m^2
+Render complete - time elapsed 48.117s - 0.2k rays/s
+Render time: 36.854s (25.00% complete, 1.6k rays)
+Render time: 38.440s (50.00% complete, 1.8k rays)
+Render time: 39.594s (75.00% complete, 1.8k rays)
+Render time: 42.055s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.02335 +/- 0.0002166 W/str/m^2
+Render complete - time elapsed 42.055s - 0.2k rays/s
+Render time: 40.554s (25.00% complete, 1.8k rays)
+Render time: 41.776s (50.00% complete, 1.8k rays)
+Render time: 44.581s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.8047 +/- 0.005033 W/str/m^2
+Render complete - time elapsed 44.582s - 0.2k rays/s
+Render time: 22.868s (25.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 4946 +/- 87.5 W/str/m^2
+Render complete - time elapsed 23.471s - 0.3k rays/s
+Render time: 22.317s (25.00% complete, 1.8k rays)
+Render time: 23.735s (100.00% complete, 5.5k rays)
+Radiance Pipeline - incident radiance: 235.8 +/- 1.901 W/str/m^2
+Render complete - time elapsed 23.737s - 0.3k rays/s
+Render time: 1505.485s (25.00% complete, 1.7k rays)
+Render time: 1643.580s (50.00% complete, 1.8k rays)
+Render time: 1656.426s (75.00% complete, 1.8k rays)
+Render time: 1665.877s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 7.849 +/- 0.06477 W/str/m^2
+Render complete - time elapsed 1665.878s - 0.0k rays/s
+KT3 [2.58885, -1.60595]
+Render time: 50.654s (25.00% complete, 1.8k rays)
+Render time: 51.750s (50.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.04003 +/- 0.000944 W/str/m^2
+Render complete - time elapsed 52.295s - 0.1k rays/s
+Render time: 47.342s (25.00% complete, 1.9k rays)
+Render time: 49.048s (50.00% complete, 1.9k rays)
+Render time: 53.031s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.08356 +/- 0.001931 W/str/m^2
+Render complete - time elapsed 53.032s - 0.1k rays/s
+Render time: 91.674s (25.00% complete, 1.9k rays)
+Render time: 95.799s (50.00% complete, 2.2k rays)
+Render time: 97.964s (75.00% complete, 2.0k rays)
+Render time: 103.567s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.1251 +/- 0.002443 W/str/m^2
+Render complete - time elapsed 103.568s - 0.1k rays/s
+Render time: 49.862s (25.00% complete, 1.9k rays)
+Render time: 53.132s (75.00% complete, 3.6k rays)
+Render time: 55.932s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 15.52 +/- 0.361 W/str/m^2
+Render complete - time elapsed 55.933s - 0.1k rays/s
+Render time: 51.740s (25.00% complete, 2.0k rays)
+Render time: 55.946s (100.00% complete, 6.0k rays)
+Radiance Pipeline - incident radiance: 0.6844 +/- 0.01823 W/str/m^2
+Render complete - time elapsed 55.947s - 0.1k rays/s
+Render time: 48.638s (25.00% complete, 1.8k rays)
+Render time: 54.716s (75.00% complete, 3.9k rays)
+Render time: 59.618s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.01026 +/- 0.0002542 W/str/m^2
+Render complete - time elapsed 59.619s - 0.1k rays/s
+Render time: 49.479s (25.00% complete, 2.0k rays)
+Render time: 52.182s (75.00% complete, 4.0k rays)
+Render time: 54.866s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 0.04938 +/- 0.000789 W/str/m^2
+Render complete - time elapsed 54.866s - 0.1k rays/s
+Render time: 26.044s (25.00% complete, 1.7k rays)
+Render time: 27.883s (50.00% complete, 1.9k rays)
+Render time: 29.884s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 2478 +/- 56.7 W/str/m^2
+Render complete - time elapsed 30.044s - 0.3k rays/s
+Render time: 25.875s (25.00% complete, 2.0k rays)
+Render time: 26.943s (50.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 11.15 +/- 0.2306 W/str/m^2
+Render complete - time elapsed 27.570s - 0.3k rays/s
+Render time: 1649.517s (25.00% complete, 1.7k rays)
+Render time: 1692.009s (50.00% complete, 1.9k rays)
+Render time: 1707.727s (75.00% complete, 2.0k rays)
+Render time: 1828.847s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 1.627 +/- 0.01536 W/str/m^2
+Render complete - time elapsed 1828.848s - 0.0k rays/s
+KT3 [2.57123, -1.60076]
+Render time: 39.794s (25.00% complete, 1.7k rays)
+Render time: 42.806s (75.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.02553 +/- 0.0008305 W/str/m^2
+Render complete - time elapsed 43.137s - 0.2k rays/s
+Render time: 37.085s (25.00% complete, 1.6k rays)
+Render time: 40.980s (50.00% complete, 1.7k rays)
+Render time: 42.897s (100.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.09523 +/- 0.00165 W/str/m^2
+Render complete - time elapsed 42.898s - 0.2k rays/s
+Render time: 71.380s (25.00% complete, 2.0k rays)
+Render time: 73.857s (50.00% complete, 1.8k rays)
+Render time: 75.510s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.1176 +/- 0.001679 W/str/m^2
+Render complete - time elapsed 75.511s - 0.1k rays/s
+Render time: 39.388s (25.00% complete, 1.9k rays)
+Render time: 42.225s (75.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 9.626 +/- 0.2939 W/str/m^2
+Render complete - time elapsed 42.617s - 0.2k rays/s
+Render time: 39.696s (25.00% complete, 1.7k rays)
+Render time: 41.943s (75.00% complete, 3.5k rays)
+Radiance Pipeline - incident radiance: 0.8465 +/- 0.02699 W/str/m^2
+Render complete - time elapsed 42.446s - 0.2k rays/s
+Render time: 39.414s (25.00% complete, 1.8k rays)
+Render time: 42.003s (50.00% complete, 1.9k rays)
+Render time: 44.235s (75.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.006593 +/- 0.0002023 W/str/m^2
+Render complete - time elapsed 44.442s - 0.2k rays/s
+Render time: 41.820s (25.00% complete, 1.8k rays)
+Render time: 45.023s (75.00% complete, 3.5k rays)
+Radiance Pipeline - incident radiance: 0.05632 +/- 0.0007635 W/str/m^2
+Render complete - time elapsed 45.088s - 0.2k rays/s
+Render time: 21.451s (25.00% complete, 1.8k rays)
+Render time: 22.559s (75.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 1818 +/- 76.52 W/str/m^2
+Render complete - time elapsed 23.043s - 0.3k rays/s
+Render time: 21.920s (25.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 13.79 +/- 0.3527 W/str/m^2
+Render complete - time elapsed 22.498s - 0.3k rays/s
+Render time: 1322.486s (25.00% complete, 2.0k rays)
+Render time: 1334.638s (50.00% complete, 1.8k rays)
+Render time: 1379.255s (75.00% complete, 1.8k rays)
+Render time: 1468.886s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 1.579 +/- 0.01623 W/str/m^2
+Render complete - time elapsed 1468.887s - 0.0k rays/s
+KT3 [2.87074, -1.689]
+Render time: 40.936s (25.00% complete, 1.7k rays)
+Render time: 43.073s (50.00% complete, 1.7k rays)
+Render time: 46.178s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.08634 +/- 0.001547 W/str/m^2
+Render complete - time elapsed 46.178s - 0.2k rays/s
+Render time: 40.703s (25.00% complete, 1.7k rays)
+Render time: 45.640s (50.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.3071 +/- 0.01368 W/str/m^2
+Render complete - time elapsed 46.513s - 0.2k rays/s
+Render time: 78.575s (25.00% complete, 1.7k rays)
+Render time: 81.346s (50.00% complete, 1.8k rays)
+Render time: 83.921s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.4423 +/- 0.0145 W/str/m^2
+Render complete - time elapsed 83.922s - 0.1k rays/s
+Render time: 43.921s (25.00% complete, 1.7k rays)
+Render time: 46.382s (100.00% complete, 5.5k rays)
+Radiance Pipeline - incident radiance: 29.99 +/- 0.6415 W/str/m^2
+Render complete - time elapsed 46.383s - 0.2k rays/s
+Render time: 40.572s (25.00% complete, 1.9k rays)
+Render time: 43.187s (50.00% complete, 1.6k rays)
+Render time: 44.296s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 5.019 +/- 0.2186 W/str/m^2
+Render complete - time elapsed 44.296s - 0.2k rays/s
+Render time: 40.043s (25.00% complete, 1.8k rays)
+Render time: 44.128s (100.00% complete, 5.1k rays)
+Radiance Pipeline - incident radiance: 0.02161 +/- 0.0003735 W/str/m^2
+Render complete - time elapsed 44.129s - 0.2k rays/s
+Render time: 42.244s (25.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.1813 +/- 0.007661 W/str/m^2
+Render complete - time elapsed 43.070s - 0.2k rays/s
+Render time: 20.893s (25.00% complete, 1.7k rays)
+Render time: 22.087s (50.00% complete, 1.7k rays)
+Render time: 23.168s (75.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 4124 +/- 136 W/str/m^2
+Render complete - time elapsed 23.856s - 0.3k rays/s
+Render time: 21.632s (25.00% complete, 1.7k rays)
+Render time: 24.834s (100.00% complete, 5.4k rays)
+Radiance Pipeline - incident radiance: 62.48 +/- 2.578 W/str/m^2
+Render complete - time elapsed 24.835s - 0.3k rays/s
+Render time: 1475.144s (25.00% complete, 1.8k rays)
+Render time: 1483.654s (50.00% complete, 1.7k rays)
+Render time: 1506.944s (75.00% complete, 1.8k rays)
+Render time: 1510.067s (100.00% complete, 1.7k rays)
+Radiance Pipeline - incident radiance: 1.734 +/- 0.05211 W/str/m^2
+Render complete - time elapsed 1510.068s - 0.0k rays/s
+KT3 [2.90598, -1.69938]
+Render time: 43.440s (25.00% complete, 1.8k rays)
+Render time: 45.198s (50.00% complete, 1.9k rays)
+Render time: 47.705s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.07362 +/- 0.001238 W/str/m^2
+Render complete - time elapsed 47.706s - 0.2k rays/s
+Render time: 44.679s (25.00% complete, 1.7k rays)
+Render time: 47.012s (50.00% complete, 1.8k rays)
+Render time: 48.295s (100.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 0.02641 +/- 0.002492 W/str/m^2
+Render complete - time elapsed 48.296s - 0.2k rays/s
+Render time: 78.358s (25.00% complete, 2.0k rays)
+Render time: 79.716s (50.00% complete, 1.8k rays)
+Render time: 83.231s (75.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.09683 +/- 0.002727 W/str/m^2
+Render complete - time elapsed 83.855s - 0.1k rays/s
+Render time: 43.761s (25.00% complete, 1.8k rays)
+Render time: 45.937s (50.00% complete, 1.9k rays)
+Render time: 49.680s (75.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 24.5 +/- 0.5349 W/str/m^2
+Render complete - time elapsed 49.969s - 0.2k rays/s
+Render time: 39.798s (25.00% complete, 1.7k rays)
+Render time: 42.720s (50.00% complete, 1.8k rays)
+Render time: 45.840s (100.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.3016 +/- 0.03149 W/str/m^2
+Render complete - time elapsed 45.841s - 0.2k rays/s
+Render time: 40.708s (25.00% complete, 1.9k rays)
+Render time: 44.113s (100.00% complete, 5.3k rays)
+Radiance Pipeline - incident radiance: 0.01871 +/- 0.0003019 W/str/m^2
+Render complete - time elapsed 44.114s - 0.2k rays/s
+Render time: 40.518s (25.00% complete, 1.7k rays)
+Render time: 44.848s (75.00% complete, 3.5k rays)
+Render time: 47.224s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.01273 +/- 0.00115 W/str/m^2
+Render complete - time elapsed 47.225s - 0.2k rays/s
+Render time: 21.996s (25.00% complete, 1.8k rays)
+Render time: 24.116s (100.00% complete, 5.5k rays)
+Radiance Pipeline - incident radiance: 2870 +/- 96.6 W/str/m^2
+Render complete - time elapsed 24.117s - 0.3k rays/s
+Render time: 21.259s (25.00% complete, 1.7k rays)
+Render time: 23.125s (75.00% complete, 3.5k rays)
+Render time: 25.352s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 4.84 +/- 0.4757 W/str/m^2
+Render complete - time elapsed 25.353s - 0.3k rays/s
+Render time: 1480.426s (25.00% complete, 1.8k rays)
+Render time: 1611.727s (50.00% complete, 1.8k rays)
+Render time: 1614.514s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.6708 +/- 0.02444 W/str/m^2
+Render complete - time elapsed 1614.515s - 0.0k rays/s
+KT3 [2.69456, -1.63709]
+Render time: 47.114s (25.00% complete, 1.9k rays)
+Render time: 48.635s (50.00% complete, 1.8k rays)
+Render time: 51.520s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.1218 +/- 0.001764 W/str/m^2
+Render complete - time elapsed 51.521s - 0.1k rays/s
+Render time: 46.941s (25.00% complete, 1.8k rays)
+Render time: 50.407s (50.00% complete, 2.0k rays)
+Render time: 54.037s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.06017 +/- 0.002621 W/str/m^2
+Render complete - time elapsed 54.038s - 0.1k rays/s
+Render time: 93.588s (25.00% complete, 2.0k rays)
+Render time: 94.776s (50.00% complete, 1.8k rays)
+Render time: 96.003s (75.00% complete, 2.0k rays)
+Render time: 99.167s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.1824 +/- 0.003772 W/str/m^2
+Render complete - time elapsed 99.168s - 0.1k rays/s
+Render time: 52.487s (25.00% complete, 1.9k rays)
+Render time: 56.420s (100.00% complete, 6.1k rays)
+Radiance Pipeline - incident radiance: 45.91 +/- 0.723 W/str/m^2
+Render complete - time elapsed 56.420s - 0.1k rays/s
+Render time: 49.949s (25.00% complete, 1.9k rays)
+Render time: 51.503s (75.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 0.6172 +/- 0.03152 W/str/m^2
+Render complete - time elapsed 51.953s - 0.2k rays/s
+Render time: 45.884s (25.00% complete, 1.9k rays)
+Render time: 47.553s (75.00% complete, 3.8k rays)
+Render time: 51.439s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.02995 +/- 0.0004465 W/str/m^2
+Render complete - time elapsed 51.439s - 0.1k rays/s
+Render time: 45.350s (25.00% complete, 1.9k rays)
+Render time: 46.696s (100.00% complete, 5.6k rays)
+Radiance Pipeline - incident radiance: 0.04021 +/- 0.001723 W/str/m^2
+Render complete - time elapsed 46.696s - 0.2k rays/s
+Render time: 25.704s (25.00% complete, 1.8k rays)
+Render time: 27.555s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 6520 +/- 108.7 W/str/m^2
+Render complete - time elapsed 28.436s - 0.3k rays/s
+Render time: 25.121s (25.00% complete, 2.0k rays)
+Render time: 26.201s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 10.03 +/- 0.5529 W/str/m^2
+Render complete - time elapsed 27.048s - 0.3k rays/s
+Render time: 1661.276s (25.00% complete, 1.9k rays)
+Render time: 1675.939s (50.00% complete, 1.8k rays)
+Render time: 1744.258s (75.00% complete, 1.9k rays)
+Render time: 1796.990s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 1.576 +/- 0.02368 W/str/m^2
+Render complete - time elapsed 1796.991s - 0.0k rays/s
+KT3 [2.55361, -1.59557]
+Render time: 33.733s (25.00% complete, 1.7k rays)
+Render time: 36.104s (75.00% complete, 3.5k rays)
+Radiance Pipeline - incident radiance: 0.01924 +/- 0.0007654 W/str/m^2
+Render complete - time elapsed 36.439s - 0.2k rays/s
+Render time: 33.911s (25.00% complete, 1.6k rays)
+Render time: 37.597s (50.00% complete, 1.7k rays)
+Render time: 39.002s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.09774 +/- 0.0008113 W/str/m^2
+Render complete - time elapsed 39.003s - 0.2k rays/s
+Render time: 58.659s (25.00% complete, 1.6k rays)
+Render time: 60.333s (50.00% complete, 1.7k rays)
+Render time: 61.793s (75.00% complete, 1.8k rays)
+Render time: 68.079s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.1225 +/- 0.002073 W/str/m^2
+Render complete - time elapsed 68.080s - 0.1k rays/s
+Render time: 34.258s (25.00% complete, 1.7k rays)
+Radiance Pipeline - incident radiance: 7.839 +/- 0.3435 W/str/m^2
+Render complete - time elapsed 34.844s - 0.2k rays/s
+Render time: 33.006s (25.00% complete, 1.7k rays)
+Render time: 35.474s (50.00% complete, 1.8k rays)
+Render time: 37.847s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.8399 +/- 0.01204 W/str/m^2
+Render complete - time elapsed 37.848s - 0.2k rays/s
+Render time: 34.302s (25.00% complete, 1.9k rays)
+Render time: 38.117s (75.00% complete, 3.5k rays)
+Render time: 39.414s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.004651 +/- 0.0001798 W/str/m^2
+Render complete - time elapsed 39.415s - 0.2k rays/s
+Render time: 33.301s (25.00% complete, 1.7k rays)
+Render time: 35.867s (50.00% complete, 1.8k rays)
+Render time: 39.850s (100.00% complete, 3.4k rays)
+Radiance Pipeline - incident radiance: 0.06072 +/- 0.0008412 W/str/m^2
+Render complete - time elapsed 39.851s - 0.2k rays/s
+Render time: 17.591s (25.00% complete, 1.7k rays)
+Render time: 20.390s (100.00% complete, 5.3k rays)
+Radiance Pipeline - incident radiance: 1440 +/- 73.26 W/str/m^2
+Render complete - time elapsed 20.391s - 0.3k rays/s
+Render time: 18.326s (25.00% complete, 1.8k rays)
+Render time: 19.992s (75.00% complete, 3.5k rays)
+Radiance Pipeline - incident radiance: 14.03 +/- 0.2334 W/str/m^2
+Render complete - time elapsed 20.363s - 0.3k rays/s
+Render time: 1079.097s (25.00% complete, 1.7k rays)
+Render time: 1119.646s (50.00% complete, 1.8k rays)
+Render time: 1195.723s (75.00% complete, 1.9k rays)
+Render time: 1205.675s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 1.548 +/- 0.01801 W/str/m^2
+Render complete - time elapsed 1205.676s - 0.0k rays/s
+KT3 [2.88836, -1.69419]
+Render time: 41.592s (25.00% complete, 1.7k rays)
+Render time: 45.466s (50.00% complete, 1.9k rays)
+Render time: 48.010s (100.00% complete, 4.1k rays)
+Radiance Pipeline - incident radiance: 0.08647 +/- 0.001493 W/str/m^2
+Render complete - time elapsed 48.010s - 0.2k rays/s
+Render time: 41.281s (25.00% complete, 1.8k rays)
+Render time: 42.942s (50.00% complete, 1.7k rays)
+Render time: 47.472s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.04658 +/- 0.003346 W/str/m^2
+Render complete - time elapsed 47.472s - 0.2k rays/s
+Render time: 77.042s (25.00% complete, 1.8k rays)
+Render time: 81.760s (50.00% complete, 1.9k rays)
+Render time: 85.082s (75.00% complete, 1.9k rays)
+Render time: 88.813s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.1297 +/- 0.004396 W/str/m^2
+Render complete - time elapsed 88.814s - 0.1k rays/s
+Render time: 39.575s (25.00% complete, 1.7k rays)
+Render time: 42.150s (50.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 27.88 +/- 0.6177 W/str/m^2
+Render complete - time elapsed 42.634s - 0.2k rays/s
+Render time: 41.704s (25.00% complete, 1.7k rays)
+Render time: 42.768s (50.00% complete, 1.8k rays)
+Render time: 47.068s (100.00% complete, 3.6k rays)
+Radiance Pipeline - incident radiance: 0.4256 +/- 0.03515 W/str/m^2
+Render complete - time elapsed 47.069s - 0.2k rays/s
+Render time: 40.152s (25.00% complete, 1.8k rays)
+Render time: 41.994s (50.00% complete, 1.8k rays)
+Render time: 43.633s (75.00% complete, 1.9k rays)
+Render time: 46.880s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.02202 +/- 0.0003575 W/str/m^2
+Render complete - time elapsed 46.881s - 0.2k rays/s
+Render time: 41.852s (25.00% complete, 1.9k rays)
+Render time: 43.205s (75.00% complete, 3.7k rays)
+Radiance Pipeline - incident radiance: 0.02934 +/- 0.001949 W/str/m^2
+Render complete - time elapsed 43.400s - 0.2k rays/s
+Render time: 20.615s (25.00% complete, 1.7k rays)
+Render time: 22.186s (75.00% complete, 3.5k rays)
+Radiance Pipeline - incident radiance: 3387 +/- 108.4 W/str/m^2
+Render complete - time elapsed 22.532s - 0.3k rays/s
+Render time: 20.902s (25.00% complete, 1.9k rays)
+Render time: 22.774s (100.00% complete, 5.2k rays)
+Radiance Pipeline - incident radiance: 7.993 +/- 0.5995 W/str/m^2
+Render complete - time elapsed 22.774s - 0.3k rays/s
+Render time: 1513.838s (25.00% complete, 1.9k rays)
+Render time: 1525.212s (50.00% complete, 1.9k rays)
+Render time: 1595.437s (75.00% complete, 1.8k rays)
+Render time: 1637.060s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.8996 +/- 0.03372 W/str/m^2
+Render complete - time elapsed 1637.061s - 0.0k rays/s
+KT3 [2.60647, -1.61114]
+Render time: 50.411s (25.00% complete, 1.8k rays)
+Render time: 51.861s (50.00% complete, 1.9k rays)
+Render time: 53.716s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.05017 +/- 0.0009876 W/str/m^2
+Render complete - time elapsed 54.296s - 0.1k rays/s
+Render time: 48.606s (25.00% complete, 1.8k rays)
+Render time: 50.049s (50.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.06928 +/- 0.002009 W/str/m^2
+Render complete - time elapsed 50.469s - 0.1k rays/s
+Render time: 86.544s (25.00% complete, 1.9k rays)
+Render time: 88.175s (50.00% complete, 1.7k rays)
+Render time: 90.923s (75.00% complete, 2.0k rays)
+Render time: 93.609s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.121 +/- 0.002298 W/str/m^2
+Render complete - time elapsed 93.612s - 0.1k rays/s
+Render time: 48.214s (25.00% complete, 1.7k rays)
+Render time: 51.912s (50.00% complete, 2.0k rays)
+Render time: 52.971s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 20.26 +/- 0.3932 W/str/m^2
+Render complete - time elapsed 52.971s - 0.1k rays/s
+Render time: 51.722s (25.00% complete, 2.0k rays)
+Render time: 54.586s (50.00% complete, 1.9k rays)
+Render time: 55.630s (100.00% complete, 4.0k rays)
+Radiance Pipeline - incident radiance: 0.5835 +/- 0.02023 W/str/m^2
+Render complete - time elapsed 55.631s - 0.1k rays/s
+Render time: 52.108s (25.00% complete, 2.0k rays)
+Render time: 54.356s (75.00% complete, 3.9k rays)
+Render time: 55.543s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.01337 +/- 0.0002679 W/str/m^2
+Render complete - time elapsed 55.544s - 0.1k rays/s
+Render time: 48.298s (25.00% complete, 1.9k rays)
+Render time: 50.341s (50.00% complete, 1.9k rays)
+Render time: 54.524s (75.00% complete, 1.9k rays)
+Render time: 55.598s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.04184 +/- 0.001162 W/str/m^2
+Render complete - time elapsed 55.599s - 0.1k rays/s
+Render time: 26.591s (25.00% complete, 2.0k rays)
+Render time: 28.949s (75.00% complete, 4.1k rays)
+Radiance Pipeline - incident radiance: 3069 +/- 49.51 W/str/m^2
+Render complete - time elapsed 29.045s - 0.3k rays/s
+Render time: 25.911s (25.00% complete, 2.0k rays)
+Render time: 27.512s (50.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 9.17 +/- 0.2756 W/str/m^2
+Render complete - time elapsed 28.281s - 0.3k rays/s
+Render time: 1656.052s (25.00% complete, 1.9k rays)
+Render time: 1665.343s (50.00% complete, 1.9k rays)
+Render time: 1749.765s (75.00% complete, 2.0k rays)
+Render time: 1872.807s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 1.485 +/- 0.01365 W/str/m^2
+Render complete - time elapsed 1872.807s - 0.0k rays/s
+KT3 [2.71218, -1.64228]
+Render time: 49.072s (25.00% complete, 1.8k rays)
+Render time: 54.974s (75.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.1993 +/- 0.002571 W/str/m^2
+Render complete - time elapsed 55.556s - 0.1k rays/s
+Render time: 50.689s (25.00% complete, 1.9k rays)
+Render time: 53.035s (75.00% complete, 3.8k rays)
+Render time: 54.718s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.09625 +/- 0.003462 W/str/m^2
+Render complete - time elapsed 54.718s - 0.1k rays/s
+Render time: 100.829s (25.00% complete, 2.0k rays)
+Render time: 102.834s (75.00% complete, 3.9k rays)
+Render time: 104.374s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.2966 +/- 0.005055 W/str/m^2
+Render complete - time elapsed 104.375s - 0.1k rays/s
+Render time: 50.549s (25.00% complete, 1.9k rays)
+Render time: 52.673s (50.00% complete, 1.9k rays)
+Render time: 54.034s (75.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 77.69 +/- 1.068 W/str/m^2
+Render complete - time elapsed 54.494s - 0.1k rays/s
+Render time: 52.099s (25.00% complete, 2.0k rays)
+Render time: 54.770s (100.00% complete, 6.1k rays)
+Radiance Pipeline - incident radiance: 0.9879 +/- 0.04272 W/str/m^2
+Render complete - time elapsed 54.771s - 0.1k rays/s
+Render time: 48.571s (25.00% complete, 1.9k rays)
+Render time: 53.225s (75.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 0.05022 +/- 0.0006518 W/str/m^2
+Render complete - time elapsed 53.938s - 0.1k rays/s
+Render time: 48.238s (25.00% complete, 1.9k rays)
+Render time: 49.656s (50.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.05886 +/- 0.002205 W/str/m^2
+Render complete - time elapsed 50.464s - 0.2k rays/s
+Render time: 26.356s (25.00% complete, 1.8k rays)
+Render time: 27.434s (75.00% complete, 4.1k rays)
+Radiance Pipeline - incident radiance: 1.153E+04 +/- 172.2 W/str/m^2
+Render complete - time elapsed 27.638s - 0.3k rays/s
+Render time: 24.889s (25.00% complete, 1.8k rays)
+Render time: 26.166s (50.00% complete, 1.7k rays)
+Render time: 27.772s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 16.15 +/- 0.5934 W/str/m^2
+Render complete - time elapsed 27.772s - 0.3k rays/s
+Render time: 1692.378s (25.00% complete, 1.8k rays)
+Render time: 1752.992s (50.00% complete, 1.7k rays)
+Render time: 1867.134s (100.00% complete, 3.9k rays)
+Radiance Pipeline - incident radiance: 2.161 +/- 0.02997 W/str/m^2
+Render complete - time elapsed 1867.135s - 0.0k rays/s
+KT3 [2.72979, -1.64747]
+Render time: 44.049s (25.00% complete, 1.8k rays)
+Render time: 45.524s (50.00% complete, 1.9k rays)
+Render time: 47.300s (75.00% complete, 1.8k rays)
+Render time: 54.692s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.3289 +/- 0.003258 W/str/m^2
+Render complete - time elapsed 54.693s - 0.1k rays/s
+Render time: 45.471s (25.00% complete, 1.8k rays)
+Render time: 47.403s (50.00% complete, 1.8k rays)
+Render time: 50.123s (100.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 0.1816 +/- 0.004835 W/str/m^2
+Render complete - time elapsed 50.124s - 0.1k rays/s
+Render time: 99.553s (25.00% complete, 2.1k rays)
+Render time: 105.778s (75.00% complete, 4.0k rays)
+Render time: 108.089s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 0.5144 +/- 0.007292 W/str/m^2
+Render complete - time elapsed 108.090s - 0.1k rays/s
+Render time: 44.419s (25.00% complete, 1.9k rays)
+Render time: 52.306s (75.00% complete, 3.9k rays)
+Render time: 54.221s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 139.1 +/- 1.62 W/str/m^2
+Render complete - time elapsed 54.222s - 0.1k rays/s
+Render time: 43.404s (25.00% complete, 1.8k rays)
+Render time: 44.566s (50.00% complete, 1.9k rays)
+Render time: 48.254s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 1.75 +/- 0.05346 W/str/m^2
+Render complete - time elapsed 48.723s - 0.2k rays/s
+Render time: 43.587s (25.00% complete, 1.8k rays)
+Render time: 46.365s (75.00% complete, 3.8k rays)
+Render time: 48.336s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 0.0825 +/- 0.0008067 W/str/m^2
+Render complete - time elapsed 48.337s - 0.2k rays/s
+Render time: 47.307s (25.00% complete, 1.9k rays)
+Render time: 48.716s (50.00% complete, 2.0k rays)
+Render time: 50.683s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.1071 +/- 0.002784 W/str/m^2
+Render complete - time elapsed 50.689s - 0.2k rays/s
+Render time: 23.250s (25.00% complete, 1.9k rays)
+Render time: 26.092s (75.00% complete, 3.8k rays)
+Radiance Pipeline - incident radiance: 2.316E+04 +/- 343.7 W/str/m^2
+Render complete - time elapsed 26.197s - 0.3k rays/s
+Render time: 24.868s (25.00% complete, 1.9k rays)
+Render time: 26.060s (100.00% complete, 6.1k rays)
+Radiance Pipeline - incident radiance: 28.22 +/- 0.8292 W/str/m^2
+Render complete - time elapsed 26.061s - 0.3k rays/s
+Render time: 1568.235s (25.00% complete, 1.9k rays)
+Render time: 1612.105s (50.00% complete, 1.8k rays)
+Render time: 1618.288s (75.00% complete, 2.1k rays)
+Render time: 1704.405s (100.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 3.448 +/- 0.04886 W/str/m^2
+Render complete - time elapsed 1704.406s - 0.0k rays/s
+KT3 [2.78265, -1.66304]
+Render time: 40.602s (25.00% complete, 1.9k rays)
+Render time: 43.893s (50.00% complete, 2.0k rays)
+Render time: 45.684s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.1193 +/- 0.001441 W/str/m^2
+Render complete - time elapsed 46.334s - 0.2k rays/s
+Render time: 43.362s (25.00% complete, 2.0k rays)
+Render time: 44.631s (50.00% complete, 1.9k rays)
+Render time: 47.526s (75.00% complete, 1.9k rays)
+Render time: 51.291s (100.00% complete, 2.1k rays)
+Radiance Pipeline - incident radiance: 1.531 +/- 0.008633 W/str/m^2
+Render complete - time elapsed 51.291s - 0.2k rays/s
+Render time: 92.639s (25.00% complete, 1.9k rays)
+Render time: 99.348s (75.00% complete, 3.8k rays)
+Render time: 100.963s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 1.665 +/- 0.009535 W/str/m^2
+Render complete - time elapsed 100.964s - 0.1k rays/s
+Render time: 42.259s (25.00% complete, 1.8k rays)
+Render time: 44.009s (50.00% complete, 1.9k rays)
+Render time: 45.080s (75.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 51.01 +/- 0.8062 W/str/m^2
+Render complete - time elapsed 45.494s - 0.2k rays/s
+Render time: 42.997s (25.00% complete, 1.7k rays)
+Render time: 44.003s (50.00% complete, 1.8k rays)
+Render time: 45.350s (75.00% complete, 1.9k rays)
+Render time: 47.516s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 18.02 +/- 0.1126 W/str/m^2
+Render complete - time elapsed 47.517s - 0.2k rays/s
+Render time: 42.470s (25.00% complete, 1.8k rays)
+Render time: 43.695s (50.00% complete, 1.9k rays)
+Render time: 46.566s (75.00% complete, 2.0k rays)
+Radiance Pipeline - incident radiance: 0.03011 +/- 0.000369 W/str/m^2
+Render complete - time elapsed 47.442s - 0.2k rays/s
+Render time: 41.705s (25.00% complete, 1.9k rays)
+Render time: 43.392s (75.00% complete, 3.6k rays)
+Render time: 46.997s (100.00% complete, 1.8k rays)
+Radiance Pipeline - incident radiance: 0.9178 +/- 0.005389 W/str/m^2
+Render complete - time elapsed 46.998s - 0.2k rays/s
+Render time: 22.800s (25.00% complete, 1.8k rays)
+Render time: 24.133s (75.00% complete, 3.9k rays)
+Render time: 25.224s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 9557 +/- 192.6 W/str/m^2
+Render complete - time elapsed 25.225s - 0.3k rays/s
+Render time: 22.189s (25.00% complete, 1.7k rays)
+Render time: 24.746s (100.00% complete, 5.7k rays)
+Radiance Pipeline - incident radiance: 279 +/- 1.806 W/str/m^2
+Render complete - time elapsed 24.747s - 0.3k rays/s
+Render time: 1570.396s (25.00% complete, 1.8k rays)
+Render time: 1624.012s (50.00% complete, 1.9k rays)
+Render time: 1669.890s (75.00% complete, 2.0k rays)
+Render time: 1732.488s (100.00% complete, 1.9k rays)
+Radiance Pipeline - incident radiance: 10.58 +/- 0.06965 W/str/m^2
+Render complete - time elapsed 1732.489s - 0.0k rays/s
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   13
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   18
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   17
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   22
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   6
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   5
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   7
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   8
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   16
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   12
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   15
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   3
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   2
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   19
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   21
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   9
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   1
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   20
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   4
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   10
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   11
+Fitting Stark broadened H6-2 spectra, LOS id= : KT3   14
+Fitting ff+fb continuum spectra, LOS id= : KT3   13
+Fitting ff+fb continuum spectra, LOS id= : KT3   18
+Fitting ff+fb continuum spectra, LOS id= : KT3   17
+Fitting ff+fb continuum spectra, LOS id= : KT3   22
+Fitting ff+fb continuum spectra, LOS id= : KT3   6
+Fitting ff+fb continuum spectra, LOS id= : KT3   5
+Fitting ff+fb continuum spectra, LOS id= : KT3   7
+Fitting ff+fb continuum spectra, LOS id= : KT3   8
+Fitting ff+fb continuum spectra, LOS id= : KT3   16
+Fitting ff+fb continuum spectra, LOS id= : KT3   12
+Fitting ff+fb continuum spectra, LOS id= : KT3   15
+Fitting ff+fb continuum spectra, LOS id= : KT3   3
+Fitting ff+fb continuum spectra, LOS id= : KT3   2
+Fitting ff+fb continuum spectra, LOS id= : KT3   19
+Fitting ff+fb continuum spectra, LOS id= : KT3   21
+Fitting ff+fb continuum spectra, LOS id= : KT3   9
+Fitting ff+fb continuum spectra, LOS id= : KT3   1
+Fitting ff+fb continuum spectra, LOS id= : KT3   20
+Fitting ff+fb continuum spectra, LOS id= : KT3   4
+Fitting ff+fb continuum spectra, LOS id= : KT3   10
+Fitting ff+fb continuum spectra, LOS id= : KT3   11
+Fitting ff+fb continuum spectra, LOS id= : KT3   14
+Ionization/recombination, LOS id= : KT3   13
+Ionization/recombination, LOS id= : KT3   18
+Ionization/recombination, LOS id= : KT3   17
+Ionization/recombination, LOS id= : KT3   22
+Ionization/recombination, LOS id= : KT3   6
+Ionization/recombination, LOS id= : KT3   5
+Ionization/recombination, LOS id= : KT3   7
+Ionization/recombination, LOS id= : KT3   8
+Ionization/recombination, LOS id= : KT3   16
+Ionization/recombination, LOS id= : KT3   12
+Ionization/recombination, LOS id= : KT3   15
+Ionization/recombination, LOS id= : KT3   3
+Ionization/recombination, LOS id= : KT3   2
+Ionization/recombination, LOS id= : KT3   19
+Ionization/recombination, LOS id= : KT3   21
+Ionization/recombination, LOS id= : KT3   9
+Ionization/recombination, LOS id= : KT3   1
+Ionization/recombination, LOS id= : KT3   20
+Ionization/recombination, LOS id= : KT3   4
+Ionization/recombination, LOS id= : KT3   10
+Ionization/recombination, LOS id= : KT3   11
+Ionization/recombination, LOS id= : KT3   14
+Saving cherab_bridge synthetic diagnostic data to: /work/bloman/pyproc/bloman_cmg_catalog_edge2d_jet_81472_may0618_seq#1/cherab_refl.synth_diag.json

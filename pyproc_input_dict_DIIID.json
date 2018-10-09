@@ -1,0 +1,86 @@
+{
+  "machine": "DIIID",
+  "tranfile": "/work/mgroth/cmg/catalog/edge2d/d3d/160299/apr2618/seq#2/tran",
+  "diag_list": [
+    "bolo1",
+    "bolo2",
+    "bolo3",
+    "bolo4",
+    "bolo1_hr",
+    "bolo2_hr",
+    "bolo3_hr",
+    "bolo4_hr",
+    "fs1",
+    "fs2",
+    "fs1_hr",
+    "fs2_hr",
+    "mds1",
+    "mds2",
+    "mds1_hr",
+    "divspred"
+  ],
+  "pulse": 1,
+  "read_ADAS": false,
+  "spec_line_dict": {
+    "1": {
+      "1": {
+        "1215.2": [
+          "2",
+          "1"
+        ],
+        "1025.3": [
+          "3",
+          "1"
+        ],
+        "6561.9": [
+          "3",
+          "2"
+        ],
+        "4860.6": [
+          "4",
+          "2"
+        ],
+        "4339.9": [
+          "5",
+          "2"
+        ],
+        "4101.2": [
+          "6",
+          "2"
+        ],
+        "3969.5": [
+          "7",
+          "2"
+        ]
+      }
+//    }
+    },
+    "6": {
+      "2": {
+        "5143.3": [
+          "3p",
+          "3s"
+        ]
+      },
+      "3": {
+        "4650.1": [
+          "3p",
+          "3s"
+        ]
+      },
+      "4": {
+        "1549.1": [
+          "2p",
+          "2s"
+        ]
+      }
+    }
+  },
+  "interactive_plots": false,
+  "save_dir": "/work/bloman/pyproc/", 
+  "run_options": {
+    "calc_synth_spec_features": true,
+    "analyse_synth_spec_features": true,
+    "calc_NII_afg_feature": false
+  }
+}

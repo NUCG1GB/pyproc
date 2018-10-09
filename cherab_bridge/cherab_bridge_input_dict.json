@@ -1,0 +1,47 @@
+{
+//  "pyproc_case": "bloman_cmg_catalog_edge2d_jet_81472_jan2918_seq#1",
+//  "pyproc_case": "bloman_cmg_catalog_edge2d_jet_81472_apr2718_seq#2",
+//  "pyproc_case": "bloman_cmg_catalog_edge2d_jet_81472_aug0918_seq#2",
+  "pyproc_case": "bloman_cmg_catalog_edge2d_jet_81472_sep2618_seq#1",
+  "diag_list": [
+//    "KT1V"
+    "KT3"
+  ],
+  "read_ADAS": false,
+  "spec_line_dict": {
+    "1": {
+      "1": {
+        "1215.2": [
+          "2",
+          "1"
+        ],
+        "6561.9": [
+          "3",
+          "2"
+        ],
+        "4101.2": [
+          "6",
+          "2"
+        ],
+        "3969.5": [
+          "7",
+          "2"
+        ]
+      }
+    }
+  },
+  "interactive_plots": false,
+  "save_dir": "/work/bloman/pyproc/",
+  "cherab_options": {
+    "spectral_bins": 500,
+    "pixel_samples": 500,
+    "import_jet_surfaces": true,
+    "include_reflections": true,
+    "ray_extinction_prob": 0.33,
+    "stark_transition": [6,2],
+    "ff_fb_emission": true,
+    "analyse_synth_spec_features": true,
+    "Sion_H_transition": [2,1]
+  }
+}
+

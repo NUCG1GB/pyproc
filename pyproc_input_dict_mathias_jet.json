@@ -1,0 +1,55 @@
+{
+  "machine": "JET",
+  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/may0218/seq#6/tran",
+  "diag_list": [
+    "KT3",
+    "KT1V",
+    "KB5V",
+    "KB5H",
+    "B3D4",
+    "B3E4"
+  ],
+  "pulse": 90000,
+  "read_ADAS": false,
+  "spec_line_dict": {
+    "1": {
+      "1": {
+        "1215.2": [
+          "2",
+          "1"
+        ],
+        "1025.3": [
+          "3",
+          "1"
+        ],
+        "6561.9": [
+          "3",
+          "2"
+        ],
+        "4860.6": [
+          "4",
+          "2"
+        ],
+        "4339.9": [
+          "5",
+          "2"
+        ],
+        "4101.2": [
+          "6",
+          "2"
+        ],
+        "3969.5": [
+          "7",
+          "2"
+        ]
+      }
+    }
+  },
+  "interactive_plots": false,
+  "save_dir": "/work/mgroth/pyproc/",
+  "run_options": {
+    "calc_synth_spec_features": true,
+    "analyse_synth_spec_features": true,
+    "calc_NII_afg_feature": false
+  }
+}

@@ -1,0 +1,3 @@
+#!/bin/bash
+python /home/bloman/pyproc/cherab_bridge/run_cherab_bridge.py cherab_bridge_input_dict.json
+
