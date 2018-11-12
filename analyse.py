@@ -89,6 +89,7 @@ class AnalyseSynthDiag(ProcessEdgeSim):
     def analyse_synth_spectra(self, res_dict):
 
         sion_H_transition = self.input_dict['run_options']['Sion_H_transition']
+        srec_H_transition = self.input_dict['run_options']['Srec_H_transition']
 
         # Estimate parameters and update res_dict. Call order matters since ne and Te
         # are needed as constraints
@@ -100,7 +101,7 @@ class AnalyseSynthDiag(ProcessEdgeSim):
         self.recover_line_int_ff_fb_Te(res_dict)
 
         # Recombination and Ionization
-        self.recover_line_int_particle_bal(res_dict, sion_H_transition=sion_H_transition, ne_scal=1.0)
+        self.recover_line_int_particle_bal(res_dict, sion_H_transition=sion_H_transition, srec_H_transition=srec_H_transition, ne_scal=1.0)
 
         # delL * neutral density from Ly-alpha assuming excitation dominated
         self.recover_delL_atomden_product(res_dict)
@@ -367,7 +368,7 @@ class AnalyseSynthDiag(ProcessEdgeSim):
                         ##### Add fit ne result to dictionary
                         res_dict[diag_key][chord_key]['los_int']['stark']['fit'] = {'ne': fit_ne, 'units': 'm^-3'}
 
-    def recover_line_int_particle_bal(self, res_dict, sion_H_transition=[3, 2], ne_scal=1.0):
+    def recover_line_int_particle_bal(self, res_dict, sion_H_transition=[[2,1], [3, 2]], srec_H_transition=[[7,2]], ne_scal=1.0):
         """
             ESTIMATE RECOMBINATION/IONISATION RATES USING ADF11 ACD, SCD COEFF
         """
@@ -405,31 +406,41 @@ class AnalyseSynthDiag(ProcessEdgeSim):
                     # Recombination:
                     # NOTE: D7-2 line must be read from standard ADAS adf15 data as it is above the
                     # max transition available in the Ly-trapped adf15 files
-                    for H_line_key in res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'].keys():
-                        if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == '7' and \
-                                        res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == '2':
-                            h72 = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit'] + \
-                                  res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['recom']
-                            srec = 1.0E-04 * area_cm2 * h72 * 4. * np.pi * \
-                                   self.ADAS_dict['adf11']['1'].acd[idxTe, idxne] / \
-                                   self.ADAS_dict['adf15']['1']['1'][H_line_key + 'recom'].pec[idxTe, idxne]
+                    for itran, tran in enumerate(srec_H_transition):
+                        for H_line_key in res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'].keys():
+                            if res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][0] == str(srec_H_transition[itran][0]) and \
+                                            res_dict[diag_key][chord_key]['spec_line_dict']['1']['1'][H_line_key][1] == str(srec_H_transition[itran][1]):
+                                hij = res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit'] + \
+                                      res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['recom']
+                                srec = 1.0E-04 * area_cm2 * hij * 4. * np.pi * \
+                                       self.ADAS_dict['adf11']['1'].acd[idxTe, idxne] / \
+                                       self.ADAS_dict['adf15']['1']['1'][H_line_key + 'recom'].pec[idxTe, idxne]
 
-                            # Add to results dict
-                            res_dict[diag_key][chord_key]['los_int']['adf11_fit'] = {'Srec': srec, 'units': 's^-1'}
+                                # Add to results dict
+                                tran_str = 'H' + str(srec_H_transition[itran][0]) + str(srec_H_transition[itran][1])
+                                if 'adf11_fit' in res_dict[diag_key][chord_key]['los_int']:
+                                    res_dict[diag_key][chord_key]['los_int']['adf11_fit'][tran_str] = {'Srec': srec, 'units': 's^-1'}
+                                else:
+                                    res_dict[diag_key][chord_key]['los_int']['adf11_fit'] = {tran_str:{'Srec': srec, 'units': 's^-1'}}
 
                     # Ionization:
-                    # Use Ly-trapping adf15,11 data if available
-                    for H_line_key in res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'].keys():
-                        if res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'][H_line_key][0] == str(sion_H_transition[0]) and \
-                                        res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'][H_line_key][1] == str(sion_H_transition[1]):
-                            h_intensity = (res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']+
-                                           res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['recom'])
-                            sion = 1.0E-04 * area_cm2 * h_intensity * 4. * np.pi * \
-                                   ADAS_dict_local['adf11']['1'].scd[idxTe, idxne] / \
-                            ADAS_dict_local['adf15']['1']['1'][H_line_key + 'excit'].pec[idxTe, idxne]
+                    # Use Ly-trapping adf15,11 data if available (ADAS_dict_local at this point already contains adf11 opacity data, if selected in the input json file)
+                    for itran, tran in enumerate(sion_H_transition):
+                        for H_line_key in res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'].keys():
+                            if res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'][H_line_key][0] == str(sion_H_transition[itran][0]) and \
+                                            res_dict[diag_key][chord_key][spec_line_dict_key]['1']['1'][H_line_key][1] == str(sion_H_transition[itran][1]):
+                                h_intensity = (res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['excit']+
+                                               res_dict[diag_key][chord_key]['los_int']['H_emiss'][H_line_key]['recom'])
+                                sion = 1.0E-04 * area_cm2 * h_intensity * 4. * np.pi * \
+                                       ADAS_dict_local['adf11']['1'].scd[idxTe, idxne] / \
+                                ADAS_dict_local['adf15']['1']['1'][H_line_key + 'excit'].pec[idxTe, idxne]
 
-                            # Add to results dict
-                            res_dict[diag_key][chord_key]['los_int']['adf11_fit']['Sion'] = sion
+                                # Add to results dict
+                                tran_str = 'H' + str(sion_H_transition[itran][0]) + str(sion_H_transition[itran][1])
+                                if tran_str in res_dict[diag_key][chord_key]['los_int']['adf11_fit']:
+                                    res_dict[diag_key][chord_key]['los_int']['adf11_fit'][tran_str].update({'Sion': sion, 'units': 's^-1'})
+                                else:
+                                    res_dict[diag_key][chord_key]['los_int']['adf11_fit'][tran_str] = {'Sion': sion, 'units': 's^-1'}
 
 
 

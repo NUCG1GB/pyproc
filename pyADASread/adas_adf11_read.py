@@ -4,50 +4,51 @@ import numpy as np
 from adaslib import *
 from adas4xx import *
 from scipy.interpolate import interp1d, interp2d
+import json, os
 
 
-adf11_files_dict = {
-    '1':
-        {'acd':'/home/adas/adas/adf11/acd12/acd12_h.dat',
-         'scd':'/home/adas/adas/adf11/scd12/scd12_h.dat',
-         'ccd':'/home/adas/adas/adf11/ccd12/ccd12_h.dat',
-         'plt':'/home/adas/adas/adf11/plt12/plt12_h.dat',
-         'prb':'/home/adas/adas/adf11/prb12/prb12_h.dat',
-         'prc':'/home/adas/adas/adf11/prc12/prc12_h.dat'},
-    '4':
-        {'acd': '/home/adas/adas/adf11/acd96/acd96_be.dat',
-         'scd': '/home/adas/adas/adf11/scd96/scd96_be.dat',
-         'ccd': '/home/adas/adas/adf11/ccd89/ccd89_be.dat',
-         'plt': '/home/adas/adas/adf11/plt96/plt96_be.dat',
-         'prb': '/home/adas/adas/adf11/prb96/prb96_be.dat',
-         'prc': '/home/adas/adas/adf11/prc89/prc89_be.dat'},
-    '6':
-        {'acd': '/home/adas/adas/adf11/acd96/acd96_c.dat',
-         'scd': '/home/adas/adas/adf11/scd96/scd96_c.dat',
-         'ccd': '/home/adas/adas/adf11/ccd89/ccd89_c.dat',
-         'plt': '/home/adas/adas/adf11/plt96/plt96_c.dat',
-         'prb': '/home/adas/adas/adf11/prb96/prb96_c.dat',
-         'prc': '/home/adas/adas/adf11/prc89/prc89_c.dat'},
-    '7':
-        {'acd': '/home/adas/adas/adf11/acd96/acd96_n.dat',
-         'scd': '/home/adas/adas/adf11/scd96/scd96_n.dat',
-         # 'ccd': '/home/adas/adas/adf11/ccd96/ccd96_n.dat',
-         'plt': '/home/adas/adas/adf11/plt96/plt96_n.dat',
-         'prb': '/home/adas/adas/adf11/prb96/prb96_n.dat',
-         'prc': '/home/adas/adas/adf11/prc89/prc89_n.dat'},
-    '10':
-        {'acd': '/home/adas/adas/adf11/acd96/acd96_ne.dat',
-         'scd': '/home/adas/adas/adf11/scd96/scd96_ne.dat',
-         # 'ccd': '/home/adas/adas/adf11/ccd96/ccd96_ne.dat',
-         'plt': '/home/adas/adas/adf11/plt96/plt96_ne.dat',
-         'prb': '/home/adas/adas/adf11/prb96/prb96_ne.dat',
-         'prc': '/home/adas/adas/adf11/prc89/prc89_ne.dat'},
-    '74':
-        {'acd': '/home/adas/adas/adf11/acd50/acd50_w.dat',
-         'scd': '/home/adas/adas/adf11/scd50/scd50_w.dat',
-         'plt': '/home/adas/adas/adf11/plt50/plt50_w.dat',
-         'prb': '/home/adas/adas/adf11/prb50/prb50_w.dat'}
-}
+# adf11_files_dict = {
+#     '1':
+#         {'acd':'/home/adas/adas/adf11/acd12/acd12_h.dat',
+#          'scd':'/home/adas/adas/adf11/scd12/scd12_h.dat',
+#          'ccd':'/home/adas/adas/adf11/ccd12/ccd12_h.dat',
+#          'plt':'/home/adas/adas/adf11/plt12/plt12_h.dat',
+#          'prb':'/home/adas/adas/adf11/prb12/prb12_h.dat',
+#          'prc':'/home/adas/adas/adf11/prc12/prc12_h.dat'},
+#     '4':
+#         {'acd': '/home/adas/adas/adf11/acd96/acd96_be.dat',
+#          'scd': '/home/adas/adas/adf11/scd96/scd96_be.dat',
+#          'ccd': '/home/adas/adas/adf11/ccd89/ccd89_be.dat',
+#          'plt': '/home/adas/adas/adf11/plt96/plt96_be.dat',
+#          'prb': '/home/adas/adas/adf11/prb96/prb96_be.dat',
+#          'prc': '/home/adas/adas/adf11/prc89/prc89_be.dat'},
+#     '6':
+#         {'acd': '/home/adas/adas/adf11/acd96/acd96_c.dat',
+#          'scd': '/home/adas/adas/adf11/scd96/scd96_c.dat',
+#          'ccd': '/home/adas/adas/adf11/ccd89/ccd89_c.dat',
+#          'plt': '/home/adas/adas/adf11/plt96/plt96_c.dat',
+#          'prb': '/home/adas/adas/adf11/prb96/prb96_c.dat',
+#          'prc': '/home/adas/adas/adf11/prc89/prc89_c.dat'},
+#     '7':
+#         {'acd': '/home/adas/adas/adf11/acd96/acd96_n.dat',
+#          'scd': '/home/adas/adas/adf11/scd96/scd96_n.dat',
+#          # 'ccd': '/home/adas/adas/adf11/ccd96/ccd96_n.dat',
+#          'plt': '/home/adas/adas/adf11/plt96/plt96_n.dat',
+#          'prb': '/home/adas/adas/adf11/prb96/prb96_n.dat',
+#          'prc': '/home/adas/adas/adf11/prc89/prc89_n.dat'},
+#     '10':
+#         {'acd': '/home/adas/adas/adf11/acd96/acd96_ne.dat',
+#          'scd': '/home/adas/adas/adf11/scd96/scd96_ne.dat',
+#          # 'ccd': '/home/adas/adas/adf11/ccd96/ccd96_ne.dat',
+#          'plt': '/home/adas/adas/adf11/plt96/plt96_ne.dat',
+#          'prb': '/home/adas/adas/adf11/prb96/prb96_ne.dat',
+#          'prc': '/home/adas/adas/adf11/prc89/prc89_ne.dat'},
+#     '74':
+#         {'acd': '/home/adas/adas/adf11/acd50/acd50_w.dat',
+#          'scd': '/home/adas/adas/adf11/scd50/scd50_w.dat',
+#          'plt': '/home/adas/adas/adf11/plt50/plt50_w.dat',
+#          'prb': '/home/adas/adas/adf11/prb50/prb50_w.dat'}
+# }
 
 Ly_beta_esc_fac_cases = {
     '0':{'Ly_beta_esc_fac':1.00, 'acd_file':'/home/bloman/python_tools/pyADASread/adas_data/acd16_h_Ly_beta_esc_fac.100.dat',
@@ -88,6 +89,23 @@ Ly_beta_esc_fac_cases = {
                                   'scd_file':'/home/bloman/python_tools/pyADASread/adas_data/scd16_h_Ly_beta_esc_fac.10.dat'},
 }
 
+def get_adf11_input_dict(file):
+    # Read adf11 input dict
+    try:
+        with open(file, mode='r', encoding='utf-8') as f:
+            # Remove comments
+            with open("temp.json", 'w') as wf:
+                for line in f.readlines():
+                    if line[0:2] == '//' or line[0:1] == '#':
+                        continue
+                    wf.write(line)
+        with open("temp.json", 'r') as f:
+            adf11_files_dict = json.load(f)
+        os.remove('temp.json')
+        return adf11_files_dict
+    except IOError as e:
+                raise
+
 class ADF11:
     def __init__(self, acd, scd, ccd, Te_arr, ne_arr, plt=None, prb=None, prc=None):
         self.acd = acd # 2D ACD array as fn(Te,ne) units: cm3 s-1
@@ -117,9 +135,9 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx, array[idx]
 
-def get_adas_imp_adf11(at_num, Te_arr, ne_arr):
+def get_adas_imp_adf11(adf11_files_dict, at_num, Te_arr, ne_arr):
 
-    at_num_to_elem = {'H':1, 'He':2, 'Li':3, 'Be':4, 'B':5, 'C':6, 'N':7, 'O':8, 'Ne':10, 'W':74}
+    at_num_to_elem = {'H':1, 'He':2, 'Li':3, 'Be':4, 'B':5, 'C':6, 'N':7, 'O':8, 'Ne':10, 'Ar':18, 'Kr':36, 'W':74}
     for elem in at_num_to_elem:
         if at_num_to_elem[elem] == at_num:
             print('Getting ADF11 data from run_adas405 and read_adf11')

@@ -1,7 +1,9 @@
 {
   "machine": "JET",
-//  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/sep2618/seq#1/tran",
-  "tranfile": "/work/pheliste/cmg/catalog/edge2d/jet/81472/jun1116/seq#1/tran",
+  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/nov0618/seq#1/tran",
+//  "tranfile": "/work/alexc/cmg/catalog/edge2d/jet/91554/may1217/seq#1/tran",
+//  "tranfile": "/work/bloman/cmg/catalog/edge2d/jet/81472/jan2918/seq#1/tran",
+//  "tranfile": "/work/pheliste/cmg/catalog/edge2d/jet/81472/jun1116/seq#1/tran",
   "diag_list": [
     "KT3",
     "KT1V",
@@ -11,7 +13,7 @@
     "B3E4"
   ],
   "pulse": 90000,
-  "read_ADAS": true,
+  "read_ADAS": false,
 //  "read_ADAS_lytrap": {
 //    "read": true,
 //    "adf11_dir": "/home/bloman/python_tools/pyADASread/adas_data/edge2d_opacity",
@@ -78,6 +80,7 @@
         ]
       }
     },
+//    }
 //    "10": {
 //      "2": {
 //        "3718.2": [
@@ -86,68 +89,68 @@
 //        ]
 //      }
 //    }
-//    "7": {
-//      "2": {
-//        "5002.18": [
-//          "3d",
-//          "3p"
-//        ],
-//        "5005.86": [
-//          "3d",
-//          "3p"
-//        ],
-//        "4042.07": [
-//          "4f",
-//          "3d",
-//// Custom identifier for Stuart Henderson's local pec file for N II
-//          "-1"
-//        ],
-//        "3996.13": [
-//          "4f",
-//          "3d",
-//// Custom identifier for Stuart Henderson's local pec file for N II
-//          "-1"
-//        ]
-//      },
-//      "3": {
-//        "4100.51": [
-//          "3p",
-//          "3s"
-//        ]
-//      },
-//      "4": {
-//        "3481.83": [
-//          "3p",
-//          "3s"
-//        ],
-//        "4058.90": [
-//          "3d",
-//          "3p"
-//        ]
-//      }
-//    }
-    "74": {
-      "1": {
-        "3567.64": [
-          "64a52b56c54d51g51h",
-          "60964a52b56c54d52g"
+    "7": {
+      "2": {
+        "5002.18": [
+          "3d",
+          "3p"
         ],
-        "3674.90": [
-          "64a52b56c54d51g51h",
-          "60964a52b56c54d52g"
+        "5005.86": [
+          "3d",
+          "3p"
         ],
-        "4053.65": [
-          "64a52b56c54d51g51h",
-          "60964a52b56c54d52g"
+        "4042.07": [
+          "4f",
+          "3d",
+// Custom identifier for Stuart Henderson's local pec file for N II
+          "-1"
+        ],
+        "3996.13": [
+          "4f",
+          "3d",
+// Custom identifier for Stuart Henderson's local pec file for N II
+          "-1"
         ]
       },
-      "2": {
-        "3604.25": [
-          "60964a52b56c54d51h",
-          "60964a52b56c54d51g"
+      "3": {
+        "4100.51": [
+          "3p",
+          "3s"
+        ]
+      },
+      "4": {
+        "3481.83": [
+          "3p",
+          "3s"
+        ],
+        "4058.90": [
+          "3d",
+          "3p"
         ]
       }
     }
+//    "74": {
+//      "1": {
+//        "3567.64": [
+//          "64a52b56c54d51g51h",
+//          "60964a52b56c54d52g"
+//        ],
+//        "3674.90": [
+//          "64a52b56c54d51g51h",
+//          "60964a52b56c54d52g"
+//        ],
+//        "4053.65": [
+//          "64a52b56c54d51g51h",
+//          "60964a52b56c54d52g"
+//        ]
+//      },
+//      "2": {
+//        "3604.25": [
+//          "60964a52b56c54d51h",
+//          "60964a52b56c54d51g"
+//        ]
+//      }
+//    }
   },
   "interactive_plots": false,
   "save_dir": "/work/bloman/pyproc/", 
@@ -155,6 +158,7 @@
     "calc_synth_spec_features": true,
     "analyse_synth_spec_features": true,
     "calc_NII_afg_feature": false,
-    "Sion_H_transition": [2,1]
+    "Sion_H_transition": [[2,1],[3,2]],
+    "Srec_H_transition": [[7,2]]
   }
 }

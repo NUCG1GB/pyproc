@@ -3,8 +3,9 @@
 import numpy as np
 from scipy import interpolate
 from adaslib import *
+import json, os
 
-# MAIN SET
+# MAIN H SET
 line_blocks = {'1215.2excit':1, #LYMAN series exc
                '1025.3excit':2,
                '972.1excit':4,
@@ -100,55 +101,72 @@ Ly_beta_esc_fac_cases = {
 
 # impurity line blocks dictionary: nuclear charge->ionisation stage
 # Also includes Hydrogen!
-imp_line_blocks = {
-    '1':
-        {'1': {'file': '/home/adas/adas/adf15/pec12#h/pec12#h_pju#h0.dat',
-               'blocks': line_blocks}},
-    '4': # Be
-        {'2': {'file': '/home/adas/adas/adf15/pec96#be/pec96#be_pju#be1.dat',
-               'blocks': {'5272.32excit': 11, '5272.32recom': 32}}},
-    '7': # N
-        ###################################################
-        # Use Stuart Henderson's latest PEC file for n1 as stage index -1
-        {'-1': {'file': '/home/shenders/adas/adas/adf15/pec16#7/pec98#n_ssh_pju#n1.dat',
-                'blocks': {'3996.13excit': 15, '3996.13recom': 65,
-                           '4042.07excit': 21, '4042.07recom': 71}},
-         ###################################################
-         '2':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n1.dat',
-              'blocks':{'5002.18excit': 17, '5002.18recom': 67,
-                        '5005.86excit': 4, '5005.86recom': 54}},
-         '3':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n2.dat',
-              'blocks':{'4100.51excit':1, '4100.51recom':51}},
-         '4':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n3.dat',
-              'blocks':{'3481.83excit':10, '3481.83recom':51,
-                        '4058.90excit':17, '4058.90recom':58}}},
-    '6': # C
-        {'1':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c0.dat',
-              'blocks':{'9408.4excit':32, '9408.4recom':81}},
-         '2':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c1.dat',
-              'blocks':{'6581.5excit':1, '6581.5recom':51},
-              'blocks':{'5143.3excit':12, '5143.3recom':62}},
-         '3':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c2.dat',
-              'blocks':{'4650.1excit':2, '4650.1recom':52}},
-         '4':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_pju#c3.dat',
-               'blocks': {'1549.1excit': 14, '1549.1recom': 55}}},
-    '10': # Ne
-        {'2': {'file': '/home/adas/adas/adf15/pec96#ne/pec96#ne_pju#ne1.dat',
-               'blocks': {'3718.2excit': 17, '3718.2recom': 70}}},
-    '74': # W
-        {'1': {'file': '/home/adas/adas/adf15/pec40#w/pec40#w_ls#w0.dat',
-               'blocks': {'3567.64excit': 44},
-               'blocks': {'3674.90excit': 45},
-               'blocks': {'4053.65excit': 48}},
-         '2': {'file': '/home/adas/adas/adf15/pec40#w/pec40#w_ls#w1.dat',
-               'blocks': {'3604.25excit': 50}}}
-}
+# imp_line_blocks = {
+#     '1':
+#         {'1': {'file': '/home/adas/adas/adf15/pec12#h/pec12#h_pju#h0.dat',
+#                'blocks': line_blocks}},
+#     '4': # Be
+#         {'2': {'file': '/home/adas/adas/adf15/pec96#be/pec96#be_pju#be1.dat',
+#                'blocks': {'5272.32excit': 11, '5272.32recom': 32}}},
+#     '7': # N
+#         ###################################################
+#         # Use Stuart Henderson's latest PEC file for n1 as stage index -1
+#         {'-1': {'file': '/home/shenders/adas/adas/adf15/pec16#7/pec98#n_ssh_pju#n1.dat',
+#                 'blocks': {'3996.13excit': 15, '3996.13recom': 65,
+#                            '4042.07excit': 21, '4042.07recom': 71}},
+#          ###################################################
+#          '2':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n1.dat',
+#               'blocks':{'5002.18excit': 17, '5002.18recom': 67,
+#                         '5005.86excit': 4, '5005.86recom': 54}},
+#          '3':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n2.dat',
+#               'blocks':{'4100.51excit':1, '4100.51recom':51}},
+#          '4':{'file':'/home/adas/adas/adf15/pec96#n/pec96#n_vsu#n3.dat',
+#               'blocks':{'3481.83excit':10, '3481.83recom':51,
+#                         '4058.90excit':17, '4058.90recom':58}}},
+#     '6': # C
+#         {'1':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c0.dat',
+#               'blocks':{'9408.4excit':32, '9408.4recom':81}},
+#          '2':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c1.dat',
+#               'blocks':{'6581.5excit':1, '6581.5recom':51},
+#               'blocks':{'5143.3excit':12, '5143.3recom':62}},
+#          '3':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_vsu#c2.dat',
+#               'blocks':{'4650.1excit':2, '4650.1recom':52}},
+#          '4':{'file':'/home/adas/adas/adf15/pec96#c/pec96#c_pju#c3.dat',
+#                'blocks': {'1549.1excit': 14, '1549.1recom': 55}}},
+#     '10': # Ne
+#         {'2': {'file': '/home/adas/adas/adf15/pec96#ne/pec96#ne_pju#ne1.dat',
+#                'blocks': {'3718.2excit': 17, '3718.2recom': 70}}},
+#     '74': # W
+#         {'1': {'file': '/home/adas/adas/adf15/pec40#w/pec40#w_ls#w0.dat',
+#                'blocks': {'3567.64excit': 44},
+#                'blocks': {'3674.90excit': 45},
+#                'blocks': {'4053.65excit': 48}},
+#          '2': {'file': '/home/adas/adas/adf15/pec40#w/pec40#w_ls#w1.dat',
+#                'blocks': {'3604.25excit': 50}}}
+# }
 
 line_blocks_lytrap = {
     '1':
         {'1': {'file': '/home/bloman/idl/adas/h_rates/pec16_h0_supress.dat',
                'blocks': line_blocks_n5}},
 }
+
+def get_adf15_input_dict(file):
+    # Read adf15 input dict
+    try:
+        with open(file, mode='r', encoding='utf-8') as f:
+            # Remove comments
+            with open("temp.json", 'w') as wf:
+                for line in f.readlines():
+                    if line[0:2] == '//' or line[0:1] == '#':
+                        continue
+                    wf.write(line)
+        with open("temp.json", 'r') as f:
+            imp_line_blocks = json.load(f)
+        os.remove('temp.json')
+        return imp_line_blocks
+    except IOError as e:
+                raise
 
 class PEC:
     def __init__(self, block, pec, Te_arr, ne_arr, info):
@@ -162,7 +180,7 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx, array[idx]
 
-def get_adas_imp_PECs(imp_dict, Te_arr, ne_arr):
+def get_adas_imp_PECs(imp_dict, imp_line_blocks, Te_arr, ne_arr):
 
     PEC_dict = dict()
     for species in imp_dict.keys():
@@ -170,12 +188,12 @@ def get_adas_imp_PECs(imp_dict, Te_arr, ne_arr):
         for stage in imp_dict[species]:
             PEC_dict[species][stage] = {}
             for key in imp_line_blocks[species][stage]['blocks']:
-                coeff, info = get_imp_adf15_block(Te_arr, ne_arr, species, stage, key, imp_line_blocks[species][stage]['file'])
+                coeff, info = get_imp_adf15_block(imp_line_blocks, Te_arr, ne_arr, species, stage, key, imp_line_blocks[species][stage]['file'])
                 PEC_dict[species][stage][key] = PEC(key, coeff, Te_arr, ne_arr, info)
 
     return PEC_dict
 
-def get_adas_imp_PECs_interp(imp_dict, Te_rnge, ne_rnge, npts=100, npts_interp=1000, lytrap_pec_file=False):
+def get_adas_imp_PECs_interp(imp_dict, imp_line_blocks, Te_rnge, ne_rnge, npts=100, npts_interp=1000, lytrap_pec_file=False):
 
     if lytrap_pec_file:
         line_blocks = line_blocks_lytrap
@@ -208,13 +226,15 @@ def get_adas_imp_PECs_interp(imp_dict, Te_rnge, ne_rnge, npts=100, npts_interp=1
                     line_block_stage = stage
 
                 if key+'excit' in line_blocks[species][line_block_stage]['blocks']:
-                    pec_excit, info = get_imp_adf15_block(Te_arr, ne_arr, species, line_block_stage, key+'excit', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
+                    pec_excit, info = get_imp_adf15_block(imp_line_blocks, Te_arr, ne_arr, species, line_block_stage,
+                                                          key+'excit', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
                 else:
                     pec_excit = np.zeros((len(Te_arr), len(ne_arr)))
                     info=None
                     print(key+'excit', ' entry does not exist, setting PEC array to zero')
                 if key+'recom' in line_blocks[species][line_block_stage]['blocks']:
-                    pec_recom, info = get_imp_adf15_block(Te_arr, ne_arr, species, line_block_stage, key+'recom', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
+                    pec_recom, info = get_imp_adf15_block(imp_line_blocks, Te_arr, ne_arr, species, line_block_stage,
+                                                          key+'recom', line_blocks[species][line_block_stage]['file'], lytrap=lytrap)
                 else:
                     pec_recom = np.zeros((len(Te_arr), len(ne_arr)))
                     info=None
@@ -309,7 +329,7 @@ def get_H_adf15_block(Te_arr, ne_arr, block_key):
 
     return coeff, info
 
-def get_imp_adf15_block(Te_arr, ne_arr, nuc_charge, ion_stage, block_key, adf15file, lytrap=False):
+def get_imp_adf15_block(imp_line_blocks, Te_arr, ne_arr, nuc_charge, ion_stage, block_key, adf15file, lytrap=False):
 
     # return 2D coeff(te, dens) in units ph s-1 cm3
     if lytrap:
@@ -327,8 +347,6 @@ def get_imp_adf15_block(Te_arr, ne_arr, nuc_charge, ion_stage, block_key, adf15f
             print(block_key, ' entry does not exist')
     else:
         if block_key in imp_line_blocks[nuc_charge][ion_stage]['blocks']:
-
-            # Read synth diag saved data
             try:
                 f = open(adf15file)
                 f.close()

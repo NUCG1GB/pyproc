@@ -13,7 +13,7 @@ from matplotlib import patches, ticker
 from collections import OrderedDict
 from pyproc import process
 from pyproc.atomic import get_ADAS_dict
-from pyproc.process import ProcessEdgeSim
+# from pyproc.process import ProcessEdgeSim
 
 from scipy.constants import Planck, speed_of_light
 
@@ -113,9 +113,9 @@ class Plot():
                                                           plot_dict['spec_line_dict_lytrap'],
                                                           restore=True, lytrap=True)
                 if key == 'prof_param_defs':
-                    self.plot_param_profiles(lineweight=2.0, alpha=0.2500, legend=False)
+                    self.plot_param_profiles(lineweight=2.0, alpha=0.2500, legend=True)
                 if key == 'prof_Hemiss_defs':
-                    self.plot_Hemiss_profiles(lineweight=3.0, alpha=0.2500, legend=False,
+                    self.plot_Hemiss_profiles(lineweight=3.0, alpha=0.2500, legend=True,
                                               Watts=False)
                 if key == 'prof_impemiss_defs':
                     self.plot_impemiss_profiles(lineweight=3.0, alpha=0.250, legend=True)
@@ -136,7 +136,8 @@ class Plot():
                     for at_num in val['lines']:
                         for stage in val['lines'][at_num]:
                             for line in val['lines'][at_num][stage]:
-                                self.plot_2d_spec_line(at_num, stage, line, diagLOS, Rrng=Rrng, Zrng=Zrng, savefig=savefig)
+                                self.plot_2d_spec_line(at_num, stage, line, diagLOS, max_abs = 1.5e22,
+                                                       Rrng=Rrng, Zrng=Zrng, savefig=savefig)
                 if key == 'imp_rad_coeff':
                     self.plot_imp_rad_coeff(val['region'], val['atnum'], val['ion_stages'])
                 if key == 'imp_rad_dist':
@@ -198,6 +199,8 @@ class Plot():
         color2 = self.plot_dict['prof_param_defs']['color']
         zorder = self.plot_dict['prof_param_defs']['zorder']
         coord = self.plot_dict['prof_param_defs']['coord']
+        Sion_H_transition = self.plot_dict['prof_param_defs']['Sion_H_transition']
+        Srec_H_transition = self.plot_dict['prof_param_defs']['Srec_H_transition']
         ylim, xlim = None, None
         if 'ylim' in self.plot_dict['prof_param_defs']:
             ylim = self.plot_dict['prof_param_defs']['ylim']
@@ -262,23 +265,53 @@ class Plot():
             #                 edgecolor=color, alpha=alpha, linewidth=0, zorder=zorder)
 
         if isinstance(axs, np.ndarray) and len(axs) > 2:
-            Sion_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Sion'])
-            Srec_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', 'Srec'])
+            # Ionization
+            ls = ['-', '--', '.', '-.']
+            for itran, tran in enumerate(Sion_H_transition):
+                tran_str = 'H' + str(Sion_H_transition[itran][0]) + str(Sion_H_transition[itran][1])
+                Sion_adf11 = self.get_line_int_sorted_data_by_chord_id(diag, ['los_int', 'adf11_fit', tran_str, 'Sion'])
 
-            # Scaling factors for CHERAB derived Sion, Srec due to abs. emission discrepancy (TODO: investigate further)
-            if self.cherab_bridge:
-                Sion_scal = 115.  # correction factor for Ly-alpha cherab absolute intensity
-                Srec_scal = 347.  # correction factor for D-epsilon cherab absolute intensity
-            else:
-                Sion_scal = 1.
-                Srec_scal = 1.
+                # Scaling factors for CHERAB derived Sion, due to abs. emission discrepancy (TODO: investigate further)
+                # Hardwired values as temporary workaround
+                if self.cherab_bridge:
+                    if tran_str == 'H21':
+                        Sion_scal = 115.
+                    elif tran_str == 'H32':
+                        Sion_scal = 615
+                    else:
+                        Sion_scal = 1.
+                else:
+                    Sion_scal = 1.
 
-            print('Sion_adf11: ', Sion_adf11)
-            # Total recombination/ionisation (derived from emission with adf11)
-            axs[2].semilogy(x, Srec_scal*Srec_adf11, '--', c=color, lw=lineweight, zorder=zorder)
-            axs[2].semilogy(x, Sion_scal*Sion_adf11, c=color, lw=lineweight, zorder=zorder)
-            axs[2].plot(0, 0, c='k', linewidth=2, label='Ionization')
-            axs[2].plot(0, 0, '--', c='k', linewidth=2, label='Recombination')
+                print('Sion_adf11, tran_str (s^-1): ', Sion_adf11)
+                # Total recombination/ionisation (derived from emission with adf11)
+                axs[2].semilogy(x, Sion_scal * Sion_adf11, c=color, ls=ls[itran], lw=lineweight, zorder=zorder, label='Sion_'+tran_str)
+
+            for itran, tran in enumerate(Srec_H_transition):
+                tran_str = 'H' + str(Srec_H_transition[itran][0]) + str(Srec_H_transition[itran][1])
+                Srec_adf11 = self.get_line_int_sorted_data_by_chord_id(diag,
+                                                                       ['los_int', 'adf11_fit', tran_str, 'Srec'])
+
+                # Scaling factors for CHERAB derived Srec due to abs. emisSrec discrepancy (TODO: investigate further)
+                # Hardwired values as temporary workaround
+                if self.cherab_bridge:
+                    if tran_str == 'H62':
+                        Srec_scal = 349.3
+                    elif tran_str == 'H72':
+                        Srec_scal = 370.
+                    else:
+                        Srec_scal = 1.
+                else:
+                    Srec_scal = 1.
+
+                print('Srec_adf11, tran_str (s^-1): ', Srec_adf11)
+                # Total recombination/ionisation (derived from emisSrec with adf11)
+                axs[2].semilogy(x, Srec_scal * Srec_adf11, c=color, ls=ls[itran], lw=lineweight, zorder=zorder,
+                                label='Srec_' + tran_str)
+
+
+            # axs[2].plot(0, 0, c='k', linewidth=2, label='Ionization')
+            # axs[2].plot(0, 0, '--', c='k', linewidth=2, label='Recombination')
             if legend:
                 leg = axs[2].legend(loc='upper right', prop={'size':14}, frameon=False, labelspacing=0.05)
 
@@ -1318,7 +1351,7 @@ class Plot():
         return sorted_parvals
 
     def plot_2d_spec_line(self, at_num, ion_stage, line_key, diagLOS, Rrng=None, Zrng=None,
-                          min_clip=0.0, max_clip = 1.0, scal_log10=False, savefig=False):
+                          min_clip=0.0, max_clip = 1.0, max_abs = None, scal_log10=False, savefig=False):
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
         fig.patch.set_facecolor('white')
@@ -1355,6 +1388,8 @@ class Plot():
         else:
             cscale_min = min_clip * np.max(spec_line)
             cscale_max = max_clip * np.max(spec_line)
+            if max_abs:
+                cscale_max = max_abs
 
         spec_line_clipped = []
         for i, cell_emiss in enumerate(spec_line):
@@ -1375,9 +1410,9 @@ class Plot():
         line_wv = float(line_key) / 10.
         title = self.case + ' ' + process.at_sym[int(at_num) - 1] + ' ' + process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
             line_wv) + ' nm'
-        title = process.at_sym[int(at_num) - 1] + ' ' + process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
-            line_wv) + ' nm'
-        ax.set_title(title)
+        # title = process.at_sym[int(at_num) - 1] + ' ' + process.roman[int(ion_stage) - 1] + ' ' + '{:5.1f}'.format(
+        #     line_wv) + ' nm'
+        ax.set_title(title, y=1.08, fontsize='16')
         ax.set_ylabel('Z [m]')
         ax.set_xlabel('R [m]')
         plt.gca().set_aspect('equal', adjustable='box')
@@ -1394,7 +1429,7 @@ class Plot():
                                                       vmax=cscale_max))
         sm._A = []
         cbar = fig.colorbar(sm, cax=cbar_ax)
-        label = '$\mathrm{ph\/s^{-1}\/m^{-3}\/sr^{-1}}$'
+        label = '$\epsilon\mathrm{\/(ph\/s^{-1}\/m^{-3}\/sr^{-1})}$'
         cbar.set_label(label)
 
         # ADD DIAG LOS
@@ -1671,8 +1706,10 @@ if __name__=='__main__':
     plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
 
     workdir = '/work/bloman/pyproc/'
-    # case = 'bloman_cmg_catalog_edge2d_jet_81472_may0618_seq#1'
-    case = 'pheliste_cmg_catalog_edge2d_jet_81472_jun1116_seq#1'
+    # case = 'bloman_cmg_catalog_edge2d_jet_81472_sep2618_seq#1'
+    case = 'alexc_cmg_catalog_edge2d_jet_91554_may1217_seq#1'
+    # case = 'alexc_cmg_catalog_edge2d_jet_84727_dec1416_seq#2'
+    # case = 'pheliste_cmg_catalog_edge2d_jet_81472_jun1116_seq#1'
     # case = "common_cmg_jsimpson_edge2d_runs_run1706183"
     # case = 'bloman_cmg_catalog_edge2d_jet_81472_may2018_seq#1'
     # case = 'bloman_cmg_catalog_edge2d_jet_81472_mar2318_seq#3'
@@ -1723,17 +1760,19 @@ if __name__=='__main__':
         # ('4', beryllium_lines_dict),
         # ('7', nitrogen_lines_dict)
         # ('10', neon_lines_dict)
-        ('74', tungsten_lines_dict)
+        # ('74', tungsten_lines_dict)
     ])
 
     plot_dict = {
         'spec_line_dict':spec_line_dict,
-        'prof_param_defs':{'diag': 'KT1V', 'axs': ax1,
-                           'include_pars_at_max_ne_along_LOS': True,
-                           'include_sum_Sion_Srec': True,
-                           'include_target_vals': True,
-                           'coord': 'R', # 'angle' 'R' 'Z'
-                           'color': 'blue', 'zorder': 10},
+        # 'prof_param_defs':{'diag': 'KT1V', 'axs': ax1,
+        #                    'include_pars_at_max_ne_along_LOS': True,
+        #                    'include_sum_Sion_Srec': True,
+        #                    'include_target_vals': True,
+        #                    'Sion_H_transition':[[2,1], [3,2]],
+        #                    'Srec_H_transition':[[7,2]],
+        #                    'coord': 'R', # 'angle' 'R' 'Z'
+        #                    'color': 'blue', 'zorder': 10},
         'prof_Hemiss_defs':{'diag': 'KT1V',
                             'lines': spec_line_dict['1']['1'],
                             'excrec': True,
@@ -1747,13 +1786,13 @@ if __name__=='__main__':
         #                    'color': 'b',
         #                    'write_ppf':False,
         #                    'zorder': 10},
-        'prof_impemiss_defs':{'diag': 'KT1V',
-                              'lines': spec_line_dict,
-                              'excrec': False,
-                              'coord': 'R', # 'angle' 'R' 'Z'
-                              'axs': ax3,
-                              'color': ['r', 'g'],
-                              'zorder': 10},
+        # 'prof_impemiss_defs':{'diag': 'KT1V',
+        #                       'lines': spec_line_dict,
+        #                       'excrec': False,
+        #                       'coord': 'R', # 'angle' 'R' 'Z'
+        #                       'axs': ax3,
+        #                       'color': ['r', 'g'],
+        #                       'zorder': 10},
         # 'imp_rad_coeff': {'region': 'vessel',
         #                   'atnum': 7,
         #                   'ion_stages': [1, 2, 3, 4],
@@ -1781,7 +1820,7 @@ if __name__=='__main__':
         #                     'color': 'b',
         #                     'zorder': 10},
         # '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT3'], 'Rrng': [2.36, 2.96], 'Zrng': [-1.73, -1.29], 'save': True},
-        '2d_defs': {'lines': spec_line_dict, 'diagLOS': ['KT1V'], 'Rrng': [2.3, 3.0], 'Zrng': [-1.74, -1.3], 'save': True},
+        '2d_defs': {'lines': spec_line_dict, 'diagLOS': [], 'Rrng': [2.3, 3.0], 'Zrng': [-1.76, -1.3], 'save': True},
         # '2d_prad': {'diagLOS': [], 'Rrng': [2.31, 3.0], 'Zrng': [-1.75, -1.0], 'save': False}
     }
 
